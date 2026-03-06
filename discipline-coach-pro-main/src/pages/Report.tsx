@@ -17,16 +17,19 @@ const Report = () => {
 
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("http://localhost:5000/api/habits", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await axios.get(
+          "https://disciai-backend.onrender.com/api/habits",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         setHabits(res.data);
 
       } catch (error) {
-        console.log("Error fetching habits");
+        console.log("Error fetching habits", error);
       }
 
     };
@@ -56,7 +59,7 @@ const Report = () => {
 
           <TabsContent value="weekly" className="mt-6">
 
-            {habits.map((habit: any) => (
+            {habits.map((habit) => (
 
               <Card key={habit._id} className="shadow-[var(--shadow-soft)] mb-6">
 
