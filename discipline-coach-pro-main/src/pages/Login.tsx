@@ -12,30 +12,33 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("https://discai-backend.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok) {
+      if (!response.ok) {
         alert(data.message || "Login failed");
         return;
       }
 
-      // ✅ Save token
       localStorage.setItem("token", data.token);
 
       alert("Login successful!");
       navigate("/dashboard");
+
     } catch (error) {
       console.error(error);
       alert("Server error");
@@ -46,16 +49,20 @@ const Login = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+
           <div className="flex justify-center mb-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
               <Brain className="h-6 w-6 text-accent" />
             </div>
           </div>
+
           <CardTitle>Login</CardTitle>
           <CardDescription>Welcome back to DisciAI</CardDescription>
+
         </CardHeader>
 
         <CardContent>
+
           <form onSubmit={handleSubmit} className="space-y-4">
 
             <div>
@@ -81,6 +88,7 @@ const Login = () => {
             <Button type="submit" className="w-full">
               Login
             </Button>
+
           </form>
 
           <p className="mt-6 text-center text-sm">
@@ -89,6 +97,7 @@ const Login = () => {
               Register
             </Link>
           </p>
+
         </CardContent>
       </Card>
     </div>
