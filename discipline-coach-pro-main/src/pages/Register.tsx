@@ -13,11 +13,11 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch("https://discai-backend.onrender.com/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,6 +55,7 @@ const Register = () => {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+
             <div>
               <Label>Full Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} required />
@@ -73,6 +74,7 @@ const Register = () => {
             <Button type="submit" className="w-full">
               Create Account
             </Button>
+
           </form>
 
           <p className="mt-6 text-center text-sm">
@@ -81,6 +83,7 @@ const Register = () => {
               Sign in
             </Link>
           </p>
+
         </CardContent>
       </Card>
     </div>
