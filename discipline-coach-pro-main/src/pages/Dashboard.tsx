@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
 import DashboardLayout from "@/components/DashboardLayout";
 
 const Dashboard = () => {
 
-  const [habit, setHabit] = useState<any>(null);
+  const [habit, setHabit] = useState(null);
 
   useEffect(() => {
 
@@ -16,7 +15,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          "http://localhost:5000/api/habits",
+          "https://disciai-backend.onrender.com/api/habits",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -25,11 +24,11 @@ const Dashboard = () => {
         );
 
         if (res.data.length > 0) {
-          setHabit(res.data[0]); // latest habit
+          setHabit(res.data[0]);
         }
 
       } catch (error) {
-        console.log("Error fetching habit");
+        console.log("Error fetching habit", error);
       }
 
     };
