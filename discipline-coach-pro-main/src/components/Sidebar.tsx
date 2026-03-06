@@ -25,7 +25,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-4rem)] bg-sidebar border-r border-sidebar-border">
+    <aside className="flex flex-col w-64 min-h-screen bg-sidebar border-r border-sidebar-border">
 
       {/* Brand */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-sidebar-border">
