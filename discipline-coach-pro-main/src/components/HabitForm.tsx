@@ -19,7 +19,7 @@ const HabitForm = () => {
   const [junkFood, setJunkFood] = useState("");
   const [mood, setMood] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
@@ -30,11 +30,11 @@ const HabitForm = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/habits", {
+      const res = await fetch("https://disciai-backend.onrender.com/api/habits", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // 🔥 VERY IMPORTANT
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           studyHours,
@@ -55,7 +55,6 @@ const HabitForm = () => {
 
       alert("Habits submitted successfully!");
 
-      // Optional: clear form after submit
       setStudyHours("");
       setWorkout("");
       setSleepHours("");
