@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://discai-backend.onrender.com/api/auth/login", {
+      const response = await fetch("https://disciai-backend.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
