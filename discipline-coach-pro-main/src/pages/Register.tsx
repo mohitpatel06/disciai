@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Brain } from "lucide-react";
 
 const Register = () => {
+
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -14,80 +15,147 @@ const Register = () => {
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     try {
-      const res = await fetch("https://disciai-backend.onrender.com/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
 
-      const data = await res.json();
+      const response = await fetch(
+        "https://disciai-backend.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            password: password,
+          }),
+        }
+      );
 
-      if (!res.ok) {
+      const data = await response.json();
+
+      if (!response.ok) {
         alert(data.message || "Registration failed");
         return;
       }
 
-      alert("Registration successful!");
+      alert("Registration successful");
+
       navigate("/login");
+
     } catch (error) {
-      console.error(error);
-      alert("Server error");
+
+      console.log("Register Error:", error);
+
+      alert("Server error. Please try again.");
+
     }
+
   };
 
   return (
+
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+
       <Card className="w-full max-w-md">
+
         <CardHeader className="text-center">
+
           <div className="flex justify-center mb-3">
+
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
+
               <Brain className="h-6 w-6 text-accent" />
+
             </div>
+
           </div>
+
           <CardTitle>Create your account</CardTitle>
-          <CardDescription>Start your discipline journey with DisciAI</CardDescription>
+
+          <CardDescription>
+            Start your discipline journey with DisciAI
+          </CardDescription>
+
         </CardHeader>
 
         <CardContent>
+
           <form onSubmit={handleSubmit} className="space-y-4">
 
             <div>
+
               <Label>Full Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} required />
+
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+
             </div>
 
             <div>
+
               <Label>Email</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+
             </div>
 
             <div>
+
               <Label>Password</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
             </div>
 
             <Button type="submit" className="w-full">
+
               Create Account
+
             </Button>
 
           </form>
 
           <p className="mt-6 text-center text-sm">
+
             Already have an account?{" "}
-            <Link to="/login" className="text-accent font-medium hover:underline">
+
+            <Link
+              to="/login"
+              className="text-accent font-medium hover:underline"
+            >
+
               Sign in
+
             </Link>
+
           </p>
 
         </CardContent>
+
       </Card>
+
     </div>
+
   );
+
 };
 
 export default Register;
