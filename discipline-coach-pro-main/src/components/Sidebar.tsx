@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -6,6 +7,8 @@ import {
   User,
   Brain,
   LogOut,
+  Menu,
+  X
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -16,15 +19,17 @@ const sidebarLinks = [
 ];
 
 const Sidebar = () => {
+
   const location = useLocation();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  return (
+  const SidebarContent = () => (
     <aside className="flex flex-col w-64 min-h-screen bg-sidebar border-r border-sidebar-border">
 
       {/* Brand */}
@@ -38,6 +43,7 @@ const Sidebar = () => {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {sidebarLinks.map((link) => {
+
           const Icon = link.icon;
           const isActive = location.pathname === link.to;
 
@@ -45,6 +51,7 @@ const Sidebar = () => {
             <Link
               key={link.to}
               to={link.to}
+              onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
                   ? "bg-sidebar-accent text-sidebar-primary"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -70,6 +77,50 @@ const Sidebar = () => {
 
     </aside>
   );
+
+  return (
+
+    <>
+
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-sidebar">
+
+        <div className="flex items-center gap-2">
+          <Brain className="h-6 w-6 text-sidebar-primary" />
+          <span className="font-bold">DisciAI</span>
+        </div>
+
+        <button onClick={() => setOpen(!open)}>
+          {open ? <X /> : <Menu />}
+        </button>
+
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Sidebar */}
+      {open && (
+        <div className="fixed inset-0 z-40 flex">
+
+          <div className="w-64 bg-sidebar">
+            <SidebarContent />
+          </div>
+
+          <div
+            className="flex-1 bg-black/40"
+            onClick={() => setOpen(false)}
+          />
+
+        </div>
+      )}
+
+    </>
+
+  );
+
 };
 
 export default Sidebar;
