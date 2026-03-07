@@ -1,4 +1,3 @@
-// DashboardLayout.tsx - Layout wrapper for authenticated pages with sidebar
 import Sidebar from "./Sidebar";
 
 interface DashboardLayoutProps {
@@ -7,9 +6,16 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
+    <div className="flex">
+
+      {/* Sidebar */}
       <Sidebar />
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto">{children}</main>
+
+      {/* Main Content */}
+      <main className="flex-1 lg:ml-64 p-6 lg:p-8 min-h-screen bg-background overflow-y-auto">
+        {children}
+      </main>
+
     </div>
   );
 };
