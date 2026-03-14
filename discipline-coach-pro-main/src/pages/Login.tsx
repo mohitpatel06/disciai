@@ -32,8 +32,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-md rounded-2xl p-8 bg-card border border-border shadow-xl">
-
-        {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl mb-4 bg-accent/10 border border-accent/20">
             <Brain className="h-7 w-7 text-accent" />
@@ -44,7 +42,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium mb-2 text-foreground">
@@ -72,15 +69,6 @@ const Login = () => {
               className="w-full px-4 py-3 rounded-xl text-foreground text-sm outline-none transition-all bg-muted border border-input focus:border-accent"
               placeholder="Enter your password"
             />
-            {/* ✅ Forgot Password link */}
-            <div className="flex justify-end mt-1">
-              <Link
-                to="/forgot-password"
-                className="text-xs text-accent hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
           </div>
 
           <button
@@ -97,7 +85,6 @@ const Login = () => {
             Register
           </Link>
         </p>
-
       </div>
     </div>
   );

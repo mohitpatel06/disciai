@@ -1,13 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const { Resend } = require("resend");
 
-// ✅ Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
@@ -84,100 +78,9 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "No account found with this email" });
-    }
-
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 3600000;
-
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = resetTokenExpiry;
-    await user.save();
-
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    // ✅ Resend se email bhejo
-    const { error } = await resend.emails.send({
-      from: "DisciAI Team <onboarding@resend.dev>",
-      to: user.email,
-      subject: "Reset Your DisciAI Password",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #10b981;">DisciAI</h1>
-            <p style="color: #6b7280;">AI Powered Discipline Tracker</p>
-          </div>
-          <div style="background: #f9fafb; border-radius: 12px; padding: 30px;">
-            <h2 style="color: #111827; margin-bottom: 10px;">Hi ${user.name}! 👋</h2>
-            <p style="color: #4b5563;">We received a request to reset your DisciAI password.</p>
-            <p style="color: #4b5563;">Click the button below to reset your password:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetLink}"
-                style="background: #10b981; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
-                Reset Password
-              </a>
-            </div>
-            <p style="color: #9ca3af; font-size: 14px;">⏰ This link will expire in <strong>1 hour</strong>.</p>
-            <p style="color: #9ca3af; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
-          </div>
-          <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
-            — DisciAI Team
-          </p>
-        </div>
-      `,
-    });
-
-    if (error) {
-      console.log("Resend Error:", error);
-      return res.status(500).json({ message: "Email send failed" });
-    }
-
-    res.status(200).json({ message: "Password reset email sent!" });
-
-  } catch (error) {
-    console.log("Forgot Password Error:", error.message);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-const resetPassword = async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { password } = req.body;
-
-    const user = await User.findOne({
-      resetToken: token,
-      resetTokenExpiry: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset link" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
-    await user.save();
-
-    res.status(200).json({ message: "Password reset successful!" });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
 module.exports = {
   registerUser,
   loginUser,
   getMe,
   updateProfile,
-  forgotPassword,
-  resetPassword,
 };

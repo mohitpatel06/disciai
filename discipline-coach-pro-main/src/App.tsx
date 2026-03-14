@@ -19,8 +19,6 @@ import NotFound from "./pages/NotFound";
 import AI from "./pages/AI";
 import Calendar from "./pages/Calendar";
 import AIChat from "./pages/AIChat";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -37,9 +35,7 @@ function Layout() {
   const showNavbar =
     location.pathname === "/" ||
     location.pathname === "/login" ||
-    location.pathname === "/register" ||
-    location.pathname === "/forgot-password" ||
-    location.pathname.startsWith("/reset-password");
+    location.pathname === "/register";
 
   return (
     <>
@@ -48,8 +44,6 @@ function Layout() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add-habit" element={<ProtectedRoute><AddHabit /></ProtectedRoute>} />
         <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
