@@ -1,19 +1,11 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const { Resend } = require("resend");
 
-// ✅ Fixed transporter — port 465 use karo
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+// ✅ Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Generate JWT
 const generateToken = (id) => {
@@ -110,8 +102,9 @@ const forgotPassword = async (req, res) => {
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await transporter.sendMail({
-      from: `"DisciAI Team" <${process.env.GMAIL_USER}>`,
+    // ✅ Resend se email bhejo
+    const { error } = await resend.emails.send({
+      from: "DisciAI Team <onboarding@resend.dev>",
       to: user.email,
       subject: "Reset Your DisciAI Password",
       html: `
@@ -139,6 +132,11 @@ const forgotPassword = async (req, res) => {
         </div>
       `,
     });
+
+    if (error) {
+      console.log("Resend Error:", error);
+      return res.status(500).json({ message: "Email send failed" });
+    }
 
     res.status(200).json({ message: "Password reset email sent!" });
 
