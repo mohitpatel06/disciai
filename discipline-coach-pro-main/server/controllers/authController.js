@@ -4,9 +4,11 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
-// Email transporter
+// ✅ Fixed transporter — port 465 use karo
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_PASS,
@@ -20,8 +22,6 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -46,8 +46,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,14 +68,10 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
 const getMe = async (req, res) => {
   res.status(200).json(req.user);
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -98,8 +92,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Forgot Password — email bhejo
-// @route   POST /api/auth/forgot-password
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -109,18 +101,15 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "No account found with this email" });
     }
 
-    // ✅ Secure random token generate karo
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+    const resetTokenExpiry = Date.now() + 3600000;
 
     user.resetToken = resetToken;
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    // ✅ Reset link
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // ✅ Email bhejo
     await transporter.sendMail({
       from: `"DisciAI Team" <${process.env.GMAIL_USER}>`,
       to: user.email,
@@ -131,23 +120,19 @@ const forgotPassword = async (req, res) => {
             <h1 style="color: #10b981;">DisciAI</h1>
             <p style="color: #6b7280;">AI Powered Discipline Tracker</p>
           </div>
-
           <div style="background: #f9fafb; border-radius: 12px; padding: 30px;">
             <h2 style="color: #111827; margin-bottom: 10px;">Hi ${user.name}! 👋</h2>
             <p style="color: #4b5563;">We received a request to reset your DisciAI password.</p>
             <p style="color: #4b5563;">Click the button below to reset your password:</p>
-
             <div style="text-align: center; margin: 30px 0;">
               <a href="${resetLink}"
                 style="background: #10b981; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
                 Reset Password
               </a>
             </div>
-
             <p style="color: #9ca3af; font-size: 14px;">⏰ This link will expire in <strong>1 hour</strong>.</p>
             <p style="color: #9ca3af; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
           </div>
-
           <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
             — DisciAI Team
           </p>
@@ -163,8 +148,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// @desc    Reset Password
-// @route   POST /api/auth/reset-password/:token
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
