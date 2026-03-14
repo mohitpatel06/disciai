@@ -32,6 +32,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-md rounded-2xl p-8 bg-card border border-border shadow-xl">
+
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl mb-4 bg-accent/10 border border-accent/20">
             <Brain className="h-7 w-7 text-accent" />
@@ -73,7 +74,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 mt-2 bg-accent"
+            className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 bg-accent"
           >
             Login
           </button>
@@ -85,6 +86,7 @@ const Login = () => {
             Register
           </Link>
         </p>
+
       </div>
     </div>
   );
