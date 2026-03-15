@@ -106,36 +106,36 @@ const Dashboard = () => {
 
   const aiSummary = habit ? getAISummary(habit.aiFeedback) : null;
 
+  // ✅ Streak logic — aaj fill ki ya nahi
+  const isFilledToday = habit ? (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastHabitDate = new Date(habit.createdAt);
+    lastHabitDate.setHours(0, 0, 0, 0);
+    return lastHabitDate.getTime() === today.getTime();
+  })() : false;
+
   // ✅ Loading Skeleton
   if (loading) {
     return (
       <DashboardLayout>
         <div className="space-y-8 animate-pulse">
-
           <div className="h-8 w-36 bg-muted rounded"></div>
-
-          {/* Discipline Score Skeleton */}
           <div className="p-6 bg-card border border-border rounded-xl">
             <div className="h-4 w-32 bg-muted rounded mb-3"></div>
             <div className="h-10 w-24 bg-muted rounded mb-3"></div>
             <div className="h-4 w-28 bg-muted rounded"></div>
           </div>
-
-          {/* AI Summary Skeleton */}
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="h-5 w-28 bg-muted rounded mb-4"></div>
             <div className="h-4 w-40 bg-muted rounded mb-3"></div>
             <div className="h-4 w-64 bg-muted rounded mb-4"></div>
             <div className="h-9 w-36 bg-muted rounded"></div>
           </div>
-
-          {/* Chart Skeleton */}
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="h-5 w-56 bg-muted rounded mb-4"></div>
             <div className="h-52 w-full bg-muted rounded"></div>
           </div>
-
-          {/* Monthly Summary Skeleton */}
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="h-5 w-40 bg-muted rounded mb-4"></div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -147,8 +147,6 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-
-          {/* Habit Data Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="p-4 bg-card border border-border rounded-xl">
@@ -157,7 +155,6 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-
         </div>
       </DashboardLayout>
     );
@@ -177,15 +174,35 @@ const Dashboard = () => {
 
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
 
-        {/* Discipline Score + Streak */}
+        {/* ✅ Discipline Score + Smart Streak */}
         <div className="p-6 bg-card border border-border rounded-xl shadow-sm">
           <h2 className="text-lg font-semibold mb-2 text-foreground">Discipline Score</h2>
           <div className="text-3xl font-bold text-green-500">
             {habit.disciplineScore} / 100
           </div>
-          <div className="mt-3 text-orange-500 font-semibold text-lg">
-            🔥 {habit.streak || 1} Day Streak!
-          </div>
+
+          {isFilledToday ? (
+            // ✅ Aaj fill ki — normal streak
+            <div className="mt-3 text-orange-500 font-semibold text-lg">
+              🔥 {habit.streak || 1} Day Streak!
+            </div>
+          ) : (
+            // ⚠️ Aaj fill nahi ki — warning
+            <div className="mt-3 space-y-2">
+              <div className="text-orange-500 font-semibold text-lg">
+                🔥 {habit.streak || 1} Day Streak
+              </div>
+              <div
+                className="flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer"
+                style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)" }}
+                onClick={() => navigate("/add-habit")}
+              >
+                <span className="text-sm font-semibold text-red-500">
+                  🔥 Streak expires tonight! Add your habits now
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* AI Summary Card */}
