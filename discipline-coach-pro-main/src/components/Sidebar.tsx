@@ -7,6 +7,7 @@ import {
   Brain,
   Calendar as CalendarIcon,
   MessageCircle,
+  Trophy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -99,6 +100,12 @@ const Sidebar = () => {
         <Link to="/ai-chat" className={linkClass("/ai-chat")}>
           <MessageCircle size={18} />
           AI Coach
+        </Link>
+
+        {/* ✅ Achievements */}
+        <Link to="/achievements" className={linkClass("/achievements")}>
+          <Trophy size={18} />
+          Achievements
         </Link>
 
       </nav>

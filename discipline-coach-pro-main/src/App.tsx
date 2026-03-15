@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import AI from "./pages/AI";
 import Calendar from "./pages/Calendar";
 import AIChat from "./pages/AIChat";
+import Achievements from "./pages/Achievements";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ function Layout() {
         <Route path="/ai" element={<ProtectedRoute><AI /></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+        <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
