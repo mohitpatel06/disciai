@@ -50,56 +50,20 @@ const Goals = () => {
     };
 
     const goalItems = [
-        {
-            key: "studyHours",
-            label: "Daily Study Hours",
-            icon: "📚",
-            unit: "hours",
-            min: 1,
-            max: 16,
-            color: "blue",
-        },
-        {
-            key: "workout",
-            label: "Daily Workout",
-            icon: "💪",
-            unit: "minutes",
-            min: 10,
-            max: 180,
-            color: "red",
-        },
-        {
-            key: "sleepHours",
-            label: "Daily Sleep",
-            icon: "😴",
-            unit: "hours",
-            min: 4,
-            max: 12,
-            color: "purple",
-        },
-        {
-            key: "waterIntake",
-            label: "Daily Water Intake",
-            icon: "💧",
-            unit: "glasses",
-            min: 4,
-            max: 20,
-            color: "cyan",
-        },
+        { key: "studyHours", label: "Daily Study Hours", icon: "📚", unit: "hours", min: 1, max: 16, trackColor: "#3b82f6" },
+        { key: "workout", label: "Daily Workout", icon: "💪", unit: "minutes", min: 10, max: 180, trackColor: "#ef4444" },
+        { key: "sleepHours", label: "Daily Sleep", icon: "😴", unit: "hours", min: 4, max: 12, trackColor: "#8b5cf6" },
+        { key: "waterIntake", label: "Daily Water Intake", icon: "💧", unit: "glasses", min: 4, max: 20, trackColor: "#06b6d4" },
     ];
 
-    const colorMap = {
-        blue: "accent-blue-500",
-        red: "accent-red-500",
-        purple: "accent-purple-500",
-        cyan: "accent-cyan-500",
-    };
-
-    const bgMap = {
-        blue: "bg-blue-500",
-        red: "bg-red-500",
-        purple: "bg-purple-500",
-        cyan: "bg-cyan-500",
+    const getTextColor = (trackColor) => {
+        const map = {
+            "#3b82f6": "text-blue-500",
+            "#ef4444": "text-red-500",
+            "#8b5cf6": "text-purple-500",
+            "#06b6d4": "text-cyan-500",
+        };
+        return map[trackColor] || "text-emerald-500";
     };
 
     if (loading) {
@@ -132,47 +96,68 @@ const Goals = () => {
 
                 {/* Goals Cards */}
                 <div className="space-y-4">
-                    {goalItems.map((item) => (
-                        <div
-                            key={item.key}
-                            className="bg-card border border-border rounded-xl p-6"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl">{item.icon}</span>
-                                    <div>
-                                        <p className="font-semibold text-foreground">{item.label}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Target: {goals[item.key]} {item.unit}
-                                        </p>
+                    {goalItems.map((item) => {
+                        const percent = ((goals[item.key] - item.min) / (item.max - item.min)) * 100;
+                        return (
+                            <div key={item.key} className="bg-card border border-border rounded-xl p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">{item.icon}</span>
+                                        <div>
+                                            <p className="font-semibold text-foreground">{item.label}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Target: {goals[item.key]} {item.unit}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={`text-2xl font-bold ${getTextColor(item.trackColor)}`}>
+                                        {goals[item.key]}
                                     </div>
                                 </div>
-                                <div className={`text-2xl font-bold ${item.color === "blue" ? "text-blue-500" :
-                                        item.color === "red" ? "text-red-500" :
-                                            item.color === "purple" ? "text-purple-500" :
-                                                "text-cyan-500"
-                                    }`}>
-                                    {goals[item.key]}
+
+                                {/* ✅ Custom Slider — dono themes mein sahi dikhega */}
+                                <div className="relative w-full h-6 flex items-center">
+                                    {/* Track background */}
+                                    <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 relative">
+                                        {/* Filled track */}
+                                        <div
+                                            className="h-2 rounded-full transition-all"
+                                            style={{
+                                                width: `${percent}%`,
+                                                backgroundColor: item.trackColor,
+                                            }}
+                                        ></div>
+                                    </div>
+                                    {/* Range input on top */}
+                                    <input
+                                        type="range"
+                                        min={item.min}
+                                        max={item.max}
+                                        value={goals[item.key]}
+                                        onChange={(e) =>
+                                            setGoals({ ...goals, [item.key]: Number(e.target.value) })
+                                        }
+                                        className="absolute w-full h-2 opacity-0 cursor-pointer"
+                                        style={{ zIndex: 2 }}
+                                    />
+                                    {/* Custom thumb */}
+                                    <div
+                                        className="absolute w-5 h-5 rounded-full border-2 border-white shadow-md transition-all"
+                                        style={{
+                                            left: `calc(${percent}% - 10px)`,
+                                            backgroundColor: item.trackColor,
+                                            zIndex: 1,
+                                        }}
+                                    ></div>
+                                </div>
+
+                                <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                                    <span>{item.min} {item.unit}</span>
+                                    <span>{item.max} {item.unit}</span>
                                 </div>
                             </div>
-
-                            {/* Slider */}
-                            <input
-                                type="range"
-                                min={item.min}
-                                max={item.max}
-                                value={goals[item.key]}
-                                onChange={(e) =>
-                                    setGoals({ ...goals, [item.key]: Number(e.target.value) })
-                                }
-                                className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${colorMap[item.color]}`}
-                            />
-                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                <span>{item.min} {item.unit}</span>
-                                <span>{item.max} {item.unit}</span>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Save Button */}
