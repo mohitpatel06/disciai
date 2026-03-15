@@ -20,46 +20,29 @@ const formatMessage = (text: string) => {
     .replace(/- /g, "• ");
 };
 
-// ✅ Notification permission maango aur schedule karo
 const setupDailyReminder = async () => {
   if (!("Notification" in window)) return;
-
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return;
-
-  // ✅ Check karo aaj already reminder set hua ya nahi
   const lastReminder = localStorage.getItem("lastReminderDate");
   const today = new Date().toDateString();
-
   if (lastReminder === today) return;
-
-  // ✅ Aaj ka reminder set karo — raat 8 baje
   const now = new Date();
   const reminderTime = new Date();
-  reminderTime.setHours(20, 0, 0, 0); // 8:00 PM
-
-  // Agar 8 baj gaye hain toh kal ke liye set karo
+  reminderTime.setHours(20, 0, 0, 0);
   if (now > reminderTime) {
     reminderTime.setDate(reminderTime.getDate() + 1);
   }
-
   const delay = reminderTime.getTime() - now.getTime();
-
   setTimeout(() => {
     const notification = new Notification("DisciAI Reminder 🔥", {
       body: "Don't forget to log your habits today! Keep your streak alive! 💪",
       icon: "/favicon.ico",
       badge: "/favicon.ico",
     });
-
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    };
-
+    notification.onclick = () => { window.focus(); notification.close(); };
     localStorage.setItem("lastReminderDate", new Date().toDateString());
   }, delay);
-
   localStorage.setItem("lastReminderDate", today);
 };
 
@@ -76,18 +59,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [notificationAsked, setNotificationAsked] = useState(false);
   const bottomRef = useRef(null);
 
-  // ✅ Notification setup — sirf ek baar
   useEffect(() => {
     const asked = localStorage.getItem("notificationAsked");
-    if (!asked) {
-      setNotificationAsked(true);
-    }
+    if (!asked) setNotificationAsked(true);
   }, []);
 
   useEffect(() => {
-    if (chatOpen) {
-      setMessages([...sharedMessages]);
-    }
+    if (chatOpen) setMessages([...sharedMessages]);
   }, [chatOpen]);
 
   useEffect(() => {
@@ -117,28 +95,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       const token = localStorage.getItem("token");
       const res = await axios.post(
         "https://disciai-backend.onrender.com/api/ai/chat",
-        {
-          messages: updatedMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        },
+        { messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const newMessages = [
-        ...updatedMessages,
-        { role: "assistant", content: res.data.reply },
-      ];
+      const newMessages = [...updatedMessages, { role: "assistant", content: res.data.reply }];
       setMessages(newMessages);
       setSharedMessages(newMessages);
     } catch (error) {
-      const newMessages = [
-        ...updatedMessages,
-        {
-          role: "assistant",
-          content: "Sorry, I'm unavailable right now. Please try again! 🙏",
-        },
-      ];
+      const newMessages = [...updatedMessages, { role: "assistant", content: "Sorry, I'm unavailable right now. Please try again! 🙏" }];
       setMessages(newMessages);
       setSharedMessages(newMessages);
     } finally {
@@ -153,6 +117,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
+  // ✅ Top bar height same rakho — 64px (h-16)
+  const topBarBg = theme === "dark" ? "bg-[#0f172a] border-white/10" : "bg-white border-slate-200";
+
   return (
     <div className="flex min-h-screen">
 
@@ -161,7 +128,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Sidebar />
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* ✅ Mobile Sidebar — same bg as sidebar */}
       {open && (
         <div
           className="fixed inset-0 z-50 bg-black/40 lg:hidden"
@@ -177,12 +144,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
 
-        {/* Mobile Top Bar */}
-        <div className={`flex items-center justify-between p-4 border-b lg:hidden ${theme === "dark" ? "bg-gray-900 border-white/10" : "bg-white border-slate-200"}`}>
+        {/* ✅ Mobile Top Bar — h-16 fixed height, same bg as sidebar */}
+        <div className={`flex items-center justify-between px-4 h-16 border-b lg:hidden flex-shrink-0 ${topBarBg}`}>
           <div className="flex items-center gap-2">
-            <Brain className="h-6 w-6 text-green-500" />
+            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
+              <Brain className="h-5 w-5 text-emerald-400" />
+            </div>
             <span className={`font-bold text-lg ${theme === "dark" ? "text-white" : "text-slate-900"}`}>
               DisciAI
             </span>
@@ -190,10 +159,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-slate-100"}`}
             >
               {theme === "light" ? (
-                <Moon className="h-5 w-5 text-gray-600" />
+                <Moon className="h-5 w-5 text-slate-600" />
               ) : (
                 <Sun className="h-5 w-5 text-yellow-400" />
               )}
@@ -208,72 +177,57 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
 
         {/* Desktop Top Bar */}
-        <div className={`hidden lg:flex items-center justify-end px-8 py-3 border-b ${theme === "dark" ? "bg-gray-900 border-white/10" : "bg-white border-slate-200"}`}>
+        <div className={`hidden lg:flex items-center justify-end px-8 h-12 border-b flex-shrink-0 ${topBarBg}`}>
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+            className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-slate-100"}`}
           >
             {theme === "light" ? (
-              <Moon className="h-5 w-5 text-gray-600" />
+              <Moon className="h-5 w-5 text-slate-600" />
             ) : (
               <Sun className="h-5 w-5 text-yellow-400" />
             )}
           </button>
         </div>
 
-        {/* ✅ Notification Banner */}
+        {/* Notification Banner */}
         {notificationAsked && (
-          <div className={`px-4 py-3 flex items-center justify-between gap-4 ${theme === "dark"
+          <div className={`px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0 ${theme === "dark"
               ? "bg-emerald-900/30 border-b border-emerald-800"
               : "bg-emerald-50 border-b border-emerald-200"
             }`}>
             <div className="flex items-center gap-2">
               <span className="text-lg">🔔</span>
-              <p className={`text-sm font-medium ${theme === "dark" ? "text-emerald-300" : "text-emerald-800"
-                }`}>
+              <p className={`text-sm font-medium ${theme === "dark" ? "text-emerald-300" : "text-emerald-800"}`}>
                 Get daily reminders to log your habits at 8:00 PM!
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={handleEnableNotifications}
-                className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition"
-              >
+              <button onClick={handleEnableNotifications} className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition">
                 Enable
               </button>
-              <button
-                onClick={handleDismissNotifications}
-                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition ${theme === "dark"
-                    ? "text-gray-400 hover:bg-gray-800"
-                    : "text-gray-500 hover:bg-gray-100"
-                  }`}
-              >
+              <button onClick={handleDismissNotifications} className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition ${theme === "dark" ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
                 Not now
               </button>
             </div>
           </div>
         )}
 
-        <main className={`p-4 lg:p-8 min-h-screen ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
+        <main className={`flex-1 p-4 lg:p-8 ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
           {children}
         </main>
 
       </div>
 
-      {/* ✅ Floating AI Chat — AI Chat page par hide */}
+      {/* Floating AI Chat */}
       {!isAIChatPage && (
         <div className="fixed bottom-6 right-6 z-50">
-
-          {/* Chat Window */}
           {chatOpen && (
             <div
-              className={`mb-4 w-80 md:w-96 rounded-2xl shadow-2xl flex flex-col overflow-hidden border ${theme === "dark"
-                  ? "bg-gray-900 border-white/10"
-                  : "bg-white border-slate-200"
+              className={`mb-4 w-80 md:w-96 rounded-2xl shadow-2xl flex flex-col overflow-hidden border ${theme === "dark" ? "bg-gray-900 border-white/10" : "bg-white border-slate-200"
                 }`}
               style={{ height: "480px" }}
             >
-              {/* Chat Header */}
               <div className="flex items-center justify-between px-4 py-3 bg-emerald-500">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -284,21 +238,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <p className="text-white/70 text-xs">Always here to help</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setChatOpen(false)}
-                  className="text-white hover:bg-white/20 p-1 rounded-lg transition"
-                >
+                <button onClick={() => setChatOpen(false)} className="text-white hover:bg-white/20 p-1 rounded-lg transition">
                   <X size={18} />
                 </button>
               </div>
 
-              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
+                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     {msg.role === "assistant" && (
                       <div className="h-6 w-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mr-2 flex-shrink-0 mt-1">
                         <Brain size={12} className="text-emerald-500" />
@@ -312,14 +259,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                             : "bg-gray-100 text-gray-800 rounded-bl-sm"
                         }`}
                       dangerouslySetInnerHTML={{
-                        __html: msg.role === "assistant"
-                          ? formatMessage(msg.content)
-                          : msg.content,
+                        __html: msg.role === "assistant" ? formatMessage(msg.content) : msg.content,
                       }}
                     />
                   </div>
                 ))}
-
                 {loading && (
                   <div className="flex justify-start">
                     <div className="h-6 w-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mr-2 flex-shrink-0">
@@ -337,7 +281,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div ref={bottomRef} />
               </div>
 
-              {/* Input */}
               <div className={`p-3 border-t flex gap-2 ${theme === "dark" ? "border-white/10" : "border-slate-200"}`}>
                 <input
                   type="text"
@@ -361,22 +304,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           )}
 
-          {/* Floating Button */}
           <button
             onClick={() => setChatOpen(!chatOpen)}
             className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg px-5 py-3 transition-all hover:scale-105"
             style={{ boxShadow: "0 4px 25px rgba(16, 185, 129, 0.5)" }}
           >
-            {chatOpen ? (
-              <X size={20} />
-            ) : (
-              <>
-                <Brain size={20} />
-                <span className="text-sm font-bold">AI Coach</span>
-              </>
-            )}
+            {chatOpen ? <X size={20} /> : <><Brain size={20} /><span className="text-sm font-bold">AI Coach</span></>}
           </button>
-
         </div>
       )}
 
