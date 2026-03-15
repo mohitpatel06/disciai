@@ -106,7 +106,7 @@ const Dashboard = () => {
 
   const aiSummary = habit ? getAISummary(habit.aiFeedback) : null;
 
-  // ✅ Streak logic — aaj fill ki ya nahi
+  // ✅ Streak logic
   const isFilledToday = habit ? (() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -160,10 +160,63 @@ const Dashboard = () => {
     );
   }
 
+  // ✅ Welcome Screen — naye user ke liye
   if (!habit) {
     return (
       <DashboardLayout>
-        <p className="p-6 text-foreground">No habit data yet.</p>
+        <div className="max-w-2xl mx-auto space-y-8 py-8 px-4">
+
+          {/* Welcome Header */}
+          <div className="text-center space-y-3">
+            <div className="text-5xl">👋</div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Welcome to DisciAI!
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Your AI-powered discipline journey starts today
+            </p>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border border-border rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3">📊</div>
+              <h3 className="font-semibold text-foreground mb-1">Track Daily</h3>
+              <p className="text-xs text-muted-foreground">
+                Log your study, workout, sleep and more every day
+              </p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3">🤖</div>
+              <h3 className="font-semibold text-foreground mb-1">AI Insights</h3>
+              <p className="text-xs text-muted-foreground">
+                Get personalized coaching from your AI discipline coach
+              </p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3">🔥</div>
+              <h3 className="font-semibold text-foreground mb-1">Build Streaks</h3>
+              <p className="text-xs text-muted-foreground">
+                Stay consistent and build lasting habits day by day
+              </p>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <div className="text-center">
+            <button
+              onClick={() => navigate("/add-habit")}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all hover:scale-105"
+              style={{ boxShadow: "0 4px 20px rgba(16, 185, 129, 0.4)" }}
+            >
+              + Add Your First Habit
+            </button>
+            <p className="text-xs text-muted-foreground mt-3">
+              Takes less than 2 minutes ⚡
+            </p>
+          </div>
+
+        </div>
       </DashboardLayout>
     );
   }
@@ -174,7 +227,7 @@ const Dashboard = () => {
 
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
 
-        {/* ✅ Discipline Score + Smart Streak */}
+        {/* Discipline Score + Smart Streak */}
         <div className="p-6 bg-card border border-border rounded-xl shadow-sm">
           <h2 className="text-lg font-semibold mb-2 text-foreground">Discipline Score</h2>
           <div className="text-3xl font-bold text-green-500">
@@ -182,12 +235,10 @@ const Dashboard = () => {
           </div>
 
           {isFilledToday ? (
-            // ✅ Aaj fill ki — normal streak
             <div className="mt-3 text-orange-500 font-semibold text-lg">
               🔥 {habit.streak || 1} Day Streak!
             </div>
           ) : (
-            // ⚠️ Aaj fill nahi ki — warning
             <div className="mt-3 space-y-2">
               <div className="text-orange-500 font-semibold text-lg">
                 🔥 {habit.streak || 1} Day Streak
