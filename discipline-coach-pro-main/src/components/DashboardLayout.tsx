@@ -48,7 +48,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const isAIChatPage = location.pathname === "/ai-chat";
 
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState(sharedMessages);
@@ -57,9 +56,30 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [notificationAsked, setNotificationAsked] = useState(false);
   const bottomRef = useRef(null);
 
+  // ✅ Smart notification logic
   useEffect(() => {
+    if (!("Notification" in window)) return;
+
+    // Already granted — kabhi mat dikhao
+    if (Notification.permission === "granted") return;
+
+    // Browser level denied — kabhi mat dikhao
+    if (Notification.permission === "denied") return;
+
     const asked = localStorage.getItem("notificationAsked");
-    if (!asked) setNotificationAsked(true);
+    const askedTime = localStorage.getItem("notificationAskedTime");
+
+    if (!asked) {
+      // Pehli baar — dikhao
+      setNotificationAsked(true);
+    } else if (asked === "dismissed" && askedTime) {
+      // Dismiss kiya tha — 7 din baad phir dikhao
+      const daysSince = (Date.now() - Number(askedTime)) / (1000 * 60 * 60 * 24);
+      if (daysSince >= 7) {
+        setNotificationAsked(true);
+      }
+    }
+    // "enabled" case mein kabhi nahi dikhega
   }, []);
 
   useEffect(() => {
@@ -70,14 +90,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ✅ Enable — permanently hide
   const handleEnableNotifications = async () => {
     await setupDailyReminder();
-    localStorage.setItem("notificationAsked", "true");
+    localStorage.setItem("notificationAsked", "enabled");
+    localStorage.removeItem("notificationAskedTime");
     setNotificationAsked(false);
   };
 
+  // ✅ Dismiss — 7 din baad phir dikhao
   const handleDismissNotifications = () => {
-    localStorage.setItem("notificationAsked", "true");
+    localStorage.setItem("notificationAsked", "dismissed");
+    localStorage.setItem("notificationAskedTime", Date.now().toString());
     setNotificationAsked(false);
   };
 
@@ -187,7 +211,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </button>
         </div>
 
-        {/* Notification Banner */}
+        {/* ✅ Notification Banner */}
         {notificationAsked && (
           <div className={`px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0 ${theme === "dark"
               ? "bg-emerald-900/30 border-b border-emerald-800"
@@ -200,10 +224,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button onClick={handleEnableNotifications} className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition">
+              <button
+                onClick={handleEnableNotifications}
+                className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+              >
                 Enable
               </button>
-              <button onClick={handleDismissNotifications} className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition ${theme === "dark" ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+              <button
+                onClick={handleDismissNotifications}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition ${theme === "dark" ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"
+                  }`}
+              >
                 Not now
               </button>
             </div>
@@ -216,8 +247,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       </div>
 
-      {/* ✅ Floating AI Chat — sidebar open hone par hide, AI chat page par bhi hide */}
-      {!isAIChatPage && !open && (
+      {/* ✅ Floating AI Chat — sirf dashboard par */}
+      {location.pathname === "/dashboard" && !open && (
         <div className="fixed bottom-6 right-4 z-40">
 
           {/* Chat Window */}
@@ -227,7 +258,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 }`}
               style={{ height: "480px" }}
             >
-              {/* Chat Header */}
               <div className="flex items-center justify-between px-4 py-3 bg-emerald-500">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -243,7 +273,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </button>
               </div>
 
-              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -282,7 +311,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div ref={bottomRef} />
               </div>
 
-              {/* Input */}
               <div className={`p-3 border-t flex gap-2 ${theme === "dark" ? "border-white/10" : "border-slate-200"}`}>
                 <input
                   type="text"
@@ -306,7 +334,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           )}
 
-          {/* ✅ Floating Button — chota aur clean */}
           <button
             onClick={() => setChatOpen(!chatOpen)}
             className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg px-4 py-2.5 transition-all hover:scale-105"
