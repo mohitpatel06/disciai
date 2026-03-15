@@ -54,7 +54,6 @@ const Dashboard = () => {
     );
   });
 
-  // ✅ Last 7 days chart data
   const last7Days = allHabits
     .slice(0, 7)
     .reverse()
@@ -107,10 +106,59 @@ const Dashboard = () => {
 
   const aiSummary = habit ? getAISummary(habit.aiFeedback) : null;
 
+  // ✅ Loading Skeleton
   if (loading) {
     return (
       <DashboardLayout>
-        <p className="p-6 text-foreground">Loading dashboard...</p>
+        <div className="space-y-8 animate-pulse">
+
+          <div className="h-8 w-36 bg-muted rounded"></div>
+
+          {/* Discipline Score Skeleton */}
+          <div className="p-6 bg-card border border-border rounded-xl">
+            <div className="h-4 w-32 bg-muted rounded mb-3"></div>
+            <div className="h-10 w-24 bg-muted rounded mb-3"></div>
+            <div className="h-4 w-28 bg-muted rounded"></div>
+          </div>
+
+          {/* AI Summary Skeleton */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="h-5 w-28 bg-muted rounded mb-4"></div>
+            <div className="h-4 w-40 bg-muted rounded mb-3"></div>
+            <div className="h-4 w-64 bg-muted rounded mb-4"></div>
+            <div className="h-9 w-36 bg-muted rounded"></div>
+          </div>
+
+          {/* Chart Skeleton */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="h-5 w-56 bg-muted rounded mb-4"></div>
+            <div className="h-52 w-full bg-muted rounded"></div>
+          </div>
+
+          {/* Monthly Summary Skeleton */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="h-5 w-40 bg-muted rounded mb-4"></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-background rounded-lg p-4 text-center border border-border">
+                  <div className="h-8 w-12 bg-muted rounded mx-auto mb-2"></div>
+                  <div className="h-3 w-20 bg-muted rounded mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Habit Data Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="p-4 bg-card border border-border rounded-xl">
+                <div className="h-3 w-20 bg-muted rounded mb-2"></div>
+                <div className="h-5 w-12 bg-muted rounded"></div>
+              </div>
+            ))}
+          </div>
+
+        </div>
       </DashboardLayout>
     );
   }
@@ -169,7 +217,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* ✅ Discipline Score Line Chart */}
+        {/* Discipline Score Line Chart */}
         {last7Days.length > 1 && (
           <div className="bg-card border border-border rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 text-foreground">
@@ -178,14 +226,8 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={last7Days}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.2)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                />
-                <YAxis
-                  domain={[0, 100]}
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",
@@ -207,7 +249,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* ✅ Habits Bar Chart */}
+        {/* Habits Bar Chart */}
         {last7Days.length > 1 && (
           <div className="bg-card border border-border rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 text-foreground">
@@ -216,10 +258,7 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={last7Days}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.2)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <Tooltip
                   contentStyle={{
