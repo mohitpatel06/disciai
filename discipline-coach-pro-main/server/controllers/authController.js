@@ -78,9 +78,42 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// ✅ Get Goals
+const getGoals = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.status(200).json(user.goals);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ✅ Update Goals
+const updateGoals = async (req, res) => {
+  try {
+    const { studyHours, workout, sleepHours, waterIntake } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.goals = {
+      studyHours: Number(studyHours) || 6,
+      workout: Number(workout) || 30,
+      sleepHours: Number(sleepHours) || 8,
+      waterIntake: Number(waterIntake) || 8,
+    };
+    await user.save();
+    res.status(200).json(user.goals);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getMe,
   updateProfile,
+  getGoals,
+  updateGoals,
 };
