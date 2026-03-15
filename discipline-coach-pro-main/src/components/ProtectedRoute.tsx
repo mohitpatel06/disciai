@@ -1,5 +1,3 @@
-// ProtectedRoute.tsx - Wrapper component that guards authenticated routes
-// TODO: Replace placeholder auth check with real authentication logic
 import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
@@ -7,10 +5,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  // TODO: Replace with actual auth state (e.g., from context or store)
-  const isAuthenticated = true; // Set to true for dev preview; false would redirect
+  // ✅ Real auth check — localStorage se token check karo
+  const token = localStorage.getItem("token");
 
-  if (!isAuthenticated) {
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
