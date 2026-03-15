@@ -3,17 +3,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar, Legend,
 } from "recharts";
+import {
+  Target, BookOpen, Dumbbell, Moon, Droplets,
+  TrendingUp, Brain, Flame, Smile, Apple, Clock
+} from "lucide-react";
 
 const Dashboard = () => {
   const [habit, setHabit] = useState(null);
@@ -27,12 +23,10 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-
         const [habitsRes, goalsRes] = await Promise.all([
           axios.get("https://disciai-backend.onrender.com/api/habits", { headers, timeout: 5000 }),
           axios.get("https://disciai-backend.onrender.com/api/auth/goals", { headers }),
         ]);
-
         if (habitsRes.data.length > 0) {
           setHabit(habitsRes.data[0]);
           setAllHabits(habitsRes.data);
@@ -90,56 +84,24 @@ const Dashboard = () => {
 
   const aiSummary = habit ? getAISummary(habit.aiFeedback) : null;
 
+  // ✅ Aaj ki habit hai ya nahi
   const isFilledToday = habit ? (() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const lastHabitDate = new Date(habit.createdAt); lastHabitDate.setHours(0, 0, 0, 0);
     return lastHabitDate.getTime() === today.getTime();
   })() : false;
 
-  // ✅ Goals Progress calculate karo
-  const goalsProgress = goals && habit ? [
-    {
-      label: "Study Hours",
-      icon: "📚",
-      current: habit.studyHours,
-      target: goals.studyHours,
-      unit: "h",
-      color: "blue",
-    },
-    {
-      label: "Workout",
-      icon: "💪",
-      current: habit.workout,
-      target: goals.workout,
-      unit: "min",
-      color: "red",
-    },
-    {
-      label: "Sleep",
-      icon: "😴",
-      current: habit.sleepHours,
-      target: goals.sleepHours,
-      unit: "h",
-      color: "purple",
-    },
-    {
-      label: "Water Intake",
-      icon: "💧",
-      current: habit.waterIntake,
-      target: goals.waterIntake,
-      unit: "glasses",
-      color: "cyan",
-    },
+  // ✅ Goals sirf aaj ki habit ke saath dikhao
+  const goalsProgress = goals && habit && isFilledToday ? [
+    { label: "Study Hours", Icon: BookOpen, current: habit.studyHours, target: goals.studyHours, unit: "h", color: "#3b82f6" },
+    { label: "Workout", Icon: Dumbbell, current: habit.workout, target: goals.workout, unit: "min", color: "#ef4444" },
+    { label: "Sleep", Icon: Moon, current: habit.sleepHours, target: goals.sleepHours, unit: "h", color: "#8b5cf6" },
+    { label: "Water Intake", Icon: Droplets, current: habit.waterIntake, target: goals.waterIntake, unit: "gl", color: "#06b6d4" },
   ] : [];
 
-  const getBarColor = (color) => {
-    const map = {
-      blue: "bg-blue-500",
-      red: "bg-red-500",
-      purple: "bg-purple-500",
-      cyan: "bg-cyan-500",
-    };
-    return map[color] || "bg-emerald-500";
+  const getMoodIcon = (mood) => {
+    const map = { great: "😄", good: "🙂", neutral: "😐", bad: "😞", terrible: "😢" };
+    return map[mood] || "😐";
   };
 
   // Loading Skeleton
@@ -147,14 +109,16 @@ const Dashboard = () => {
     return (
       <DashboardLayout>
         <div className="space-y-6 animate-pulse">
-          <div className="h-8 w-36 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 bg-card border border-border rounded-xl h-32"></div>
-            <div className="p-6 bg-card border border-border rounded-xl h-32"></div>
+          <div className="h-8 w-36 bg-muted rounded-lg"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-card border border-border rounded-2xl h-36"></div>
+            <div className="bg-card border border-border rounded-2xl h-36"></div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-6 h-40"></div>
-          <div className="bg-card border border-border rounded-xl p-6 h-64"></div>
-          <div className="bg-card border border-border rounded-xl p-6 h-64"></div>
+          <div className="bg-card border border-border rounded-2xl h-40"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-card border border-border rounded-2xl h-56"></div>
+            <div className="bg-card border border-border rounded-2xl h-56"></div>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -164,35 +128,36 @@ const Dashboard = () => {
   if (!habit) {
     return (
       <DashboardLayout>
-        <div className="max-w-2xl mx-auto space-y-8 py-8 px-4">
+        <div className="max-w-xl mx-auto space-y-8 py-12 px-4">
           <div className="text-center space-y-3">
-            <div className="text-5xl">👋</div>
+            <div className="text-6xl mb-2">👋</div>
             <h1 className="text-3xl font-bold text-foreground">Welcome to DisciAI!</h1>
-            <p className="text-muted-foreground text-lg">Your AI-powered discipline journey starts today</p>
+            <p className="text-muted-foreground">Your AI-powered discipline journey starts today</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             {[
-              { icon: "📊", title: "Track Daily", desc: "Log your study, workout, sleep and more every day" },
-              { icon: "🤖", title: "AI Insights", desc: "Get personalized coaching from your AI discipline coach" },
-              { icon: "🔥", title: "Build Streaks", desc: "Stay consistent and build lasting habits day by day" },
+              { Icon: TrendingUp, title: "Track Daily Habits", desc: "Log study, workout, sleep and more", color: "text-blue-500", bg: "bg-blue-500/10" },
+              { Icon: Brain, title: "AI-Powered Insights", desc: "Get personalized coaching from your AI coach", color: "text-purple-500", bg: "bg-purple-500/10" },
+              { Icon: Flame, title: "Build Streaks", desc: "Stay consistent and build lasting discipline", color: "text-orange-500", bg: "bg-orange-500/10" },
             ].map((f) => (
-              <div key={f.title} className="bg-card border border-border rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">{f.icon}</div>
-                <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
-                <p className="text-xs text-muted-foreground">{f.desc}</p>
+              <div key={f.title} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
+                <div className={`h-10 w-10 rounded-xl ${f.bg} flex items-center justify-center flex-shrink-0`}>
+                  <f.Icon size={20} className={f.color} />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm">{f.title}</p>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </div>
               </div>
             ))}
           </div>
-          <div className="text-center">
-            <button
-              onClick={() => navigate("/add-habit")}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all hover:scale-105"
-              style={{ boxShadow: "0 4px 20px rgba(16, 185, 129, 0.4)" }}
-            >
-              + Add Your First Habit
-            </button>
-            <p className="text-xs text-muted-foreground mt-3">Takes less than 2 minutes ⚡</p>
-          </div>
+          <button
+            onClick={() => navigate("/add-habit")}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-base transition-all"
+            style={{ boxShadow: "0 4px 20px rgba(16, 185, 129, 0.3)" }}
+          >
+            + Add Your First Habit
+          </button>
         </div>
       </DashboardLayout>
     );
@@ -200,82 +165,88 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
 
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
 
-        {/* Top Row — Score + Streak + AI Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Row 1 — Score + AI Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* Discipline Score + Streak */}
-          <div className="p-6 bg-card border border-border rounded-xl shadow-sm">
-            <p className="text-sm text-muted-foreground mb-1">Discipline Score</p>
-            <div className="text-4xl font-bold text-emerald-500 mb-1">
-              {habit.disciplineScore}<span className="text-lg text-muted-foreground">/100</span>
+          {/* Discipline Score */}
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium text-muted-foreground">Discipline Score</p>
+              <div className="flex items-center gap-1 bg-orange-500/10 rounded-full px-2 py-1">
+                <Flame size={12} className="text-orange-500" />
+                <span className="text-xs font-bold text-orange-500">{habit.streak || 1} Day Streak</span>
+              </div>
+            </div>
+            <div className="flex items-end gap-1 mb-3">
+              <span className="text-5xl font-bold text-emerald-500">{habit.disciplineScore}</span>
+              <span className="text-lg text-muted-foreground mb-1">/100</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2 mb-3">
               <div
-                className="bg-emerald-500 h-2 rounded-full transition-all"
+                className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${habit.disciplineScore}%` }}
               ></div>
             </div>
-            {isFilledToday ? (
-              <div className="text-orange-500 font-semibold">
-                🔥 {habit.streak || 1} Day Streak!
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="text-orange-500 font-semibold">
-                  🔥 {habit.streak || 1} Day Streak
-                </div>
-                <div
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer"
-                  style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)" }}
-                  onClick={() => navigate("/add-habit")}
-                >
-                  <span className="text-xs font-semibold text-red-500">
-                    🔥 Streak expires tonight! Add your habits now
-                  </span>
-                </div>
-              </div>
+            {!isFilledToday && (
+              <button
+                onClick={() => navigate("/add-habit")}
+                className="w-full flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition"
+              >
+                <Flame size={12} />
+                Streak expires tonight — Log habits now
+              </button>
             )}
           </div>
 
           {/* AI Summary */}
           {aiSummary && (
-            <div className="bg-card border border-purple-200 dark:border-purple-800 rounded-xl p-6">
-              <p className="text-sm font-bold text-foreground mb-3">🤖 AI Summary</p>
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-7 w-7 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <Brain size={14} className="text-purple-500" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">AI Summary</p>
+              </div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs text-muted-foreground">Productivity:</span>
-                <span className={`font-bold text-xs px-2 py-1 rounded-full ${aiSummary.level.toLowerCase().includes("high")
-                    ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${aiSummary.level.toLowerCase().includes("high")
+                    ? "bg-green-500/10 text-green-500"
                     : aiSummary.level.toLowerCase().includes("low")
-                      ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                      : "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300"
+                      ? "bg-red-500/10 text-red-500"
+                      : "bg-yellow-500/10 text-yellow-500"
                   }`}>
                   {aiSummary.emoji} {aiSummary.level}
                 </span>
               </div>
               {aiSummary.summary && (
-                <p className="text-muted-foreground text-xs leading-relaxed mb-3 line-clamp-2">
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">
                   {aiSummary.summary}
                 </p>
               )}
               <button
                 onClick={() => navigate("/report")}
-                className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg transition"
+                className="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg transition font-medium"
               >
-                👉 View Full Analysis
+                View Full Analysis →
               </button>
             </div>
           )}
         </div>
 
-        {/* ✅ Today's Goals Progress */}
-        {goalsProgress.length > 0 && (
-          <div className="bg-card border border-border rounded-xl p-6">
+        {/* Today's Goals — sirf aaj ki habit hai toh dikhao */}
+        {isFilledToday && goalsProgress.length > 0 && (
+          <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-foreground">🎯 Today's Goals</h2>
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Target size={14} className="text-emerald-500" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Today's Goals</p>
+              </div>
               <button
                 onClick={() => navigate("/goals")}
                 className="text-xs text-emerald-500 hover:underline font-medium"
@@ -291,24 +262,25 @@ const Dashboard = () => {
                   <div key={g.label} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span>{g.icon}</span>
-                        <span className="text-sm font-medium text-foreground">{g.label}</span>
+                        <g.Icon size={14} style={{ color: g.color }} />
+                        <span className="text-xs font-medium text-foreground">{g.label}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-sm font-bold text-foreground">
+                        <span className="text-xs font-bold text-foreground">
                           {g.current}/{g.target}{g.unit}
                         </span>
-                        {achieved ? (
-                          <span className="text-emerald-500 text-sm">✅</span>
-                        ) : (
-                          <span className="text-red-400 text-sm">❌</span>
-                        )}
+                        <span className={`text-xs ${achieved ? "text-emerald-500" : "text-red-400"}`}>
+                          {achieved ? "✓" : "✗"}
+                        </span>
                       </div>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
+                    <div className="w-full bg-muted rounded-full h-1.5">
                       <div
-                        className={`h-2 rounded-full transition-all ${achieved ? "bg-emerald-500" : getBarColor(g.color)}`}
-                        style={{ width: `${percent}%` }}
+                        className="h-1.5 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${percent}%`,
+                          backgroundColor: achieved ? "#10b981" : g.color,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -318,64 +290,83 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Aaj habit nahi fill ki — Goals section mein prompt dikhao */}
+        {!isFilledToday && goals && (
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Target size={14} className="text-emerald-500" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Today's Goals</p>
+            </div>
+            <div className="text-center py-4">
+              <p className="text-muted-foreground text-sm mb-3">
+                Log today's habits to track your goal progress
+              </p>
+              <button
+                onClick={() => navigate("/add-habit")}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+              >
+                + Log Today's Habits
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Charts */}
         {last7Days.length > 1 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Line Chart */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-base font-bold mb-4 text-foreground">
-                📈 Score Trend (7 Days)
-              </h2>
-              <ResponsiveContainer width="100%" height={180}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp size={14} className="text-emerald-500" />
+                <p className="text-sm font-semibold text-foreground">Score Trend — 7 Days</p>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={last7Days}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.2)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                  <Tooltip contentStyle={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--foreground)" }} />
-                  <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={2.5} dot={{ fill: "#10b981", r: 3 }} name="Score" />
+                  <Tooltip contentStyle={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: "10px", fontSize: "12px" }} />
+                  <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={2} dot={{ fill: "#10b981", r: 3 }} name="Score" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Bar Chart */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-base font-bold mb-4 text-foreground">
-                📊 Habits (7 Days)
-              </h2>
-              <ResponsiveContainer width="100%" height={180}>
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Target size={14} className="text-blue-500" />
+                <p className="text-sm font-semibold text-foreground">Habits — 7 Days</p>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={last7Days}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.2)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                  <Tooltip contentStyle={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--foreground)" }} />
-                  <Legend wrapperStyle={{ fontSize: "11px" }} />
-                  <Bar dataKey="study" fill="#3b82f6" name="Study" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="sleep" fill="#8b5cf6" name="Sleep" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="water" fill="#06b6d4" name="Water" radius={[4, 4, 0, 0]} />
+                  <Tooltip contentStyle={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: "10px", fontSize: "12px" }} />
+                  <Legend wrapperStyle={{ fontSize: "10px" }} />
+                  <Bar dataKey="study" fill="#3b82f6" name="Study" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="sleep" fill="#8b5cf6" name="Sleep" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="water" fill="#06b6d4" name="Water" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-
           </div>
         )}
 
         {/* Monthly Summary */}
         {monthlyHabits.length > 0 && (
-          <div className="bg-card border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-            <h2 className="text-lg font-bold mb-4 text-foreground">
-              📊 {monthName} Summary
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <p className="text-sm font-semibold text-foreground mb-4">{monthName} Summary</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { value: `${avgScore}%`, label: "Avg Score", color: "text-emerald-500" },
-                { value: `${avgStudy}h`, label: "Avg Study", color: "text-blue-500" },
-                { value: `${avgSleep}h`, label: "Avg Sleep", color: "text-purple-500" },
-                { value: avgWater, label: "Avg Water", color: "text-cyan-500" },
+                { value: `${avgScore}%`, label: "Avg Score", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                { value: `${avgStudy}h`, label: "Avg Study", color: "text-blue-500", bg: "bg-blue-500/10" },
+                { value: `${avgSleep}h`, label: "Avg Sleep", color: "text-purple-500", bg: "bg-purple-500/10" },
+                { value: `${avgWater}`, label: "Avg Water", color: "text-cyan-500", bg: "bg-cyan-500/10" },
               ].map((item) => (
-                <div key={item.label} className="bg-background rounded-xl p-4 text-center border border-border">
-                  <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{item.label}</p>
+                <div key={item.label} className={`${item.bg} rounded-xl p-3 text-center`}>
+                  <p className={`text-xl font-bold ${item.color}`}>{item.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.label}</p>
                 </div>
               ))}
             </div>
@@ -385,21 +376,26 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Today's Habit Data */}
+        {/* Today's Log */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-4">📋 Today's Log</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <p className="text-sm font-semibold text-foreground mb-3">
+            {isFilledToday ? "📋 Today's Log" : "📋 Last Entry"}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[
-              { label: "Study Hours", value: `${habit.studyHours}h` },
-              { label: "Workout", value: `${habit.workout} mins` },
-              { label: "Sleep Hours", value: `${habit.sleepHours}h` },
-              { label: "Water Intake", value: `${habit.waterIntake} glasses` },
-              { label: "Junk Food", value: habit.junkFood ? "Yes" : "No" },
-              { label: "Mood", value: habit.mood },
+              { Icon: BookOpen, label: "Study", value: `${habit.studyHours}h`, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { Icon: Dumbbell, label: "Workout", value: `${habit.workout}min`, color: "text-red-500", bg: "bg-red-500/10" },
+              { Icon: Moon, label: "Sleep", value: `${habit.sleepHours}h`, color: "text-purple-500", bg: "bg-purple-500/10" },
+              { Icon: Droplets, label: "Water", value: `${habit.waterIntake} gl`, color: "text-cyan-500", bg: "bg-cyan-500/10" },
+              { Icon: Apple, label: "Junk Food", value: habit.junkFood ? "Yes" : "No", color: habit.junkFood ? "text-red-500" : "text-emerald-500", bg: habit.junkFood ? "bg-red-500/10" : "bg-emerald-500/10" },
+              { Icon: Smile, label: "Mood", value: `${getMoodIcon(habit.mood)} ${habit.mood}`, color: "text-yellow-500", bg: "bg-yellow-500/10" },
             ].map((item) => (
-              <div key={item.label} className="p-4 bg-card border border-border rounded-xl shadow-sm">
-                <p className="text-muted-foreground text-xs mb-1">{item.label}</p>
-                <p className="font-semibold text-foreground capitalize">{item.value}</p>
+              <div key={item.label} className="bg-card border border-border rounded-xl p-4">
+                <div className={`h-8 w-8 rounded-lg ${item.bg} flex items-center justify-center mb-2`}>
+                  <item.Icon size={14} className={item.color} />
+                </div>
+                <p className="text-xs text-muted-foreground">{item.label}</p>
+                <p className="font-semibold text-foreground text-sm capitalize mt-0.5">{item.value}</p>
               </div>
             ))}
           </div>
