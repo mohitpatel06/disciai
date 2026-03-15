@@ -20,6 +20,49 @@ const formatMessage = (text: string) => {
     .replace(/- /g, "• ");
 };
 
+// ✅ Notification permission maango aur schedule karo
+const setupDailyReminder = async () => {
+  if (!("Notification" in window)) return;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return;
+
+  // ✅ Check karo aaj already reminder set hua ya nahi
+  const lastReminder = localStorage.getItem("lastReminderDate");
+  const today = new Date().toDateString();
+
+  if (lastReminder === today) return;
+
+  // ✅ Aaj ka reminder set karo — raat 8 baje
+  const now = new Date();
+  const reminderTime = new Date();
+  reminderTime.setHours(20, 0, 0, 0); // 8:00 PM
+
+  // Agar 8 baj gaye hain toh kal ke liye set karo
+  if (now > reminderTime) {
+    reminderTime.setDate(reminderTime.getDate() + 1);
+  }
+
+  const delay = reminderTime.getTime() - now.getTime();
+
+  setTimeout(() => {
+    const notification = new Notification("DisciAI Reminder 🔥", {
+      body: "Don't forget to log your habits today! Keep your streak alive! 💪",
+      icon: "/favicon.ico",
+      badge: "/favicon.ico",
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+
+    localStorage.setItem("lastReminderDate", new Date().toDateString());
+  }, delay);
+
+  localStorage.setItem("lastReminderDate", today);
+};
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -30,7 +73,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [messages, setMessages] = useState(sharedMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notificationAsked, setNotificationAsked] = useState(false);
   const bottomRef = useRef(null);
+
+  // ✅ Notification setup — sirf ek baar
+  useEffect(() => {
+    const asked = localStorage.getItem("notificationAsked");
+    if (!asked) {
+      setNotificationAsked(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (chatOpen) {
@@ -41,6 +93,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleEnableNotifications = async () => {
+    await setupDailyReminder();
+    localStorage.setItem("notificationAsked", "true");
+    setNotificationAsked(false);
+  };
+
+  const handleDismissNotifications = () => {
+    localStorage.setItem("notificationAsked", "true");
+    setNotificationAsked(false);
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -158,6 +221,39 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </button>
         </div>
 
+        {/* ✅ Notification Banner */}
+        {notificationAsked && (
+          <div className={`px-4 py-3 flex items-center justify-between gap-4 ${theme === "dark"
+              ? "bg-emerald-900/30 border-b border-emerald-800"
+              : "bg-emerald-50 border-b border-emerald-200"
+            }`}>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔔</span>
+              <p className={`text-sm font-medium ${theme === "dark" ? "text-emerald-300" : "text-emerald-800"
+                }`}>
+                Get daily reminders to log your habits at 8:00 PM!
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleEnableNotifications}
+                className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+              >
+                Enable
+              </button>
+              <button
+                onClick={handleDismissNotifications}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition ${theme === "dark"
+                    ? "text-gray-400 hover:bg-gray-800"
+                    : "text-gray-500 hover:bg-gray-100"
+                  }`}
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        )}
+
         <main className={`p-4 lg:p-8 min-h-screen ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
           {children}
         </main>
@@ -265,7 +361,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           )}
 
-          {/* ✅ Floating Button — Brain icon + AI Coach label */}
+          {/* Floating Button */}
           <button
             onClick={() => setChatOpen(!chatOpen)}
             className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg px-5 py-3 transition-all hover:scale-105"
