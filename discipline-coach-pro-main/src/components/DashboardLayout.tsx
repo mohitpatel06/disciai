@@ -30,9 +30,7 @@ const setupDailyReminder = async () => {
   const now = new Date();
   const reminderTime = new Date();
   reminderTime.setHours(20, 0, 0, 0);
-  if (now > reminderTime) {
-    reminderTime.setDate(reminderTime.getDate() + 1);
-  }
+  if (now > reminderTime) reminderTime.setDate(reminderTime.getDate() + 1);
   const delay = reminderTime.getTime() - now.getTime();
   setTimeout(() => {
     const notification = new Notification("DisciAI Reminder 🔥", {
@@ -117,7 +115,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
-  // ✅ Top bar height same rakho — 64px (h-16)
   const topBarBg = theme === "dark" ? "bg-[#0f172a] border-white/10" : "bg-white border-slate-200";
 
   return (
@@ -128,7 +125,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Sidebar />
       </div>
 
-      {/* ✅ Mobile Sidebar — same bg as sidebar */}
+      {/* Mobile Sidebar */}
       {open && (
         <div
           className="fixed inset-0 z-50 bg-black/40 lg:hidden"
@@ -146,7 +143,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
 
-        {/* ✅ Mobile Top Bar — h-16 fixed height, same bg as sidebar */}
+        {/* Mobile Top Bar */}
         <div className={`flex items-center justify-between px-4 h-16 border-b lg:hidden flex-shrink-0 ${topBarBg}`}>
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
@@ -177,7 +174,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
 
         {/* Desktop Top Bar */}
-        <div className={`hidden lg:flex items-center justify-end px-8 h-12 border-b flex-shrink-0 ${topBarBg}`}>
+        <div className={`hidden lg:flex items-center justify-end px-8 h-16 border-b flex-shrink-0 ${topBarBg}`}>
           <button
             onClick={toggleTheme}
             className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-slate-100"}`}
@@ -219,15 +216,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       </div>
 
-      {/* Floating AI Chat */}
-      {!isAIChatPage && (
-        <div className="fixed bottom-6 right-6 z-50">
+      {/* ✅ Floating AI Chat — sidebar open hone par hide, AI chat page par bhi hide */}
+      {!isAIChatPage && !open && (
+        <div className="fixed bottom-6 right-4 z-40">
+
+          {/* Chat Window */}
           {chatOpen && (
             <div
-              className={`mb-4 w-80 md:w-96 rounded-2xl shadow-2xl flex flex-col overflow-hidden border ${theme === "dark" ? "bg-gray-900 border-white/10" : "bg-white border-slate-200"
+              className={`mb-3 w-80 md:w-96 rounded-2xl shadow-2xl flex flex-col overflow-hidden border ${theme === "dark" ? "bg-gray-900 border-white/10" : "bg-white border-slate-200"
                 }`}
               style={{ height: "480px" }}
             >
+              {/* Chat Header */}
               <div className="flex items-center justify-between px-4 py-3 bg-emerald-500">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -243,6 +243,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </button>
               </div>
 
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -281,6 +282,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div ref={bottomRef} />
               </div>
 
+              {/* Input */}
               <div className={`p-3 border-t flex gap-2 ${theme === "dark" ? "border-white/10" : "border-slate-200"}`}>
                 <input
                   type="text"
@@ -304,13 +306,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           )}
 
+          {/* ✅ Floating Button — chota aur clean */}
           <button
             onClick={() => setChatOpen(!chatOpen)}
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg px-5 py-3 transition-all hover:scale-105"
-            style={{ boxShadow: "0 4px 25px rgba(16, 185, 129, 0.5)" }}
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg px-4 py-2.5 transition-all hover:scale-105"
+            style={{ boxShadow: "0 4px 20px rgba(16, 185, 129, 0.4)" }}
           >
-            {chatOpen ? <X size={20} /> : <><Brain size={20} /><span className="text-sm font-bold">AI Coach</span></>}
+            {chatOpen ? (
+              <X size={18} />
+            ) : (
+              <>
+                <Brain size={18} />
+                <span className="text-xs font-bold">AI Coach</span>
+              </>
+            )}
           </button>
+
         </div>
       )}
 
