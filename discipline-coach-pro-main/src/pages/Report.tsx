@@ -6,11 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Report = () => {
   const [habits, setHabits] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ AI text ko properly format karo
   const formatAIText = (text) => {
     if (!text) return [];
-
     const lines = text
       .replace(/###/g, "")
       .replace(/\*\*/g, "")
@@ -22,7 +21,6 @@ const Report = () => {
     let currentSection = null;
 
     lines.forEach((line) => {
-      // Section heading detect karo
       const isHeading =
         line.toLowerCase().includes("productivity level") ||
         line.toLowerCase().includes("what you did well") ||
@@ -56,6 +54,8 @@ const Report = () => {
         setHabits(res.data);
       } catch (error) {
         console.log("Error fetching habits");
+      } finally {
+        setLoading(false);
       }
     };
     fetchHabits();
@@ -90,7 +90,6 @@ const Report = () => {
     ? (monthlyHabits.reduce((sum, h) => sum + h.disciplineScore, 0) / monthlyHabits.length).toFixed(1)
     : 0;
 
-  // ✅ Section heading ka style decide karo
   const getHeadingStyle = (heading) => {
     const h = heading.toLowerCase();
     if (h.includes("what you did well"))
@@ -108,9 +107,47 @@ const Report = () => {
     return "text-foreground font-medium text-sm";
   };
 
+  // ✅ Loading Skeleton
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Report</h1>
+            <p className="text-muted-foreground">AI analysis of your habits</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="h-9 w-20 bg-muted rounded-lg animate-pulse"></div>
+            <div className="h-9 w-20 bg-muted rounded-lg animate-pulse"></div>
+          </div>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="mb-6 animate-pulse">
+              <CardHeader>
+                <div className="h-5 w-24 bg-muted rounded"></div>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((j) => (
+                  <div key={j} className="h-4 bg-muted rounded"></div>
+                ))}
+                <div className="col-span-2 h-4 bg-muted rounded w-full mt-2"></div>
+              </CardContent>
+              <div className="p-4 m-4 bg-muted rounded-xl">
+                <div className="h-4 w-32 bg-muted rounded mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded w-full"></div>
+                  <div className="h-3 bg-muted rounded w-4/5"></div>
+                  <div className="h-3 bg-muted rounded w-3/5"></div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   const HabitCard = ({ habit }) => {
     const sections = formatAIText(habit.aiFeedback);
-
     return (
       <Card className="mb-6 bg-card border border-border">
         <CardHeader>
@@ -136,20 +173,15 @@ const Report = () => {
           </div>
         </CardContent>
 
-        {/* ✅ AI Analysis - properly formatted */}
         <div className="p-4 m-4 bg-muted border border-border rounded-xl">
           <p className="font-bold mb-4 text-lg text-foreground">
             🤖 AI Habit Analysis
           </p>
-
           {sections.map((section, idx) => (
             <div key={idx} className="mb-3">
-              {/* Section Heading */}
               <p className={getHeadingStyle(section.heading)}>
                 {section.heading}
               </p>
-
-              {/* Section Items */}
               {section.items.length > 0 && (
                 <ul className="mt-1 space-y-1">
                   {section.items.map((item, i) => (
