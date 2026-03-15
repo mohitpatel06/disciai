@@ -77,7 +77,8 @@ const Calendar = () => {
             <DashboardLayout>
                 <div className="max-w-2xl mx-auto space-y-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground">📅 Habit Calendar</h1>
+                        {/* ✅ Fixed emoji */}
+                        <h1 className="text-3xl font-bold text-foreground">🗓️ Habit Calendar</h1>
                         <p className="text-muted-foreground mt-1">Track which days you filled your habits</p>
                     </div>
 
@@ -110,7 +111,8 @@ const Calendar = () => {
             <div className="space-y-8 max-w-2xl mx-auto">
 
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">📅 Habit Calendar</h1>
+                    {/* ✅ Fixed emoji */}
+                    <h1 className="text-3xl font-bold text-foreground">🗓️ Habit Calendar</h1>
                     <p className="text-muted-foreground mt-1">
                         Track which days you filled your habits
                     </p>

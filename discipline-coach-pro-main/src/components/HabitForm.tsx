@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,6 +17,7 @@ const HabitForm = () => {
   const [waterIntake, setWaterIntake] = useState("");
   const [junkFood, setJunkFood] = useState("");
   const [mood, setMood] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +28,8 @@ const HabitForm = () => {
       alert("Please login first");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch("https://disciai-backend.onrender.com/api/habits", {
@@ -65,6 +67,8 @@ const HabitForm = () => {
     } catch (error) {
       console.error(error);
       alert("Server error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +87,7 @@ const HabitForm = () => {
               type="number"
               value={studyHours}
               onChange={(e) => setStudyHours(e.target.value)}
+              placeholder="e.g. 4"
             />
           </div>
 
@@ -92,6 +97,7 @@ const HabitForm = () => {
               type="number"
               value={workout}
               onChange={(e) => setWorkout(e.target.value)}
+              placeholder="e.g. 30"
             />
           </div>
 
@@ -101,15 +107,17 @@ const HabitForm = () => {
               type="number"
               value={sleepHours}
               onChange={(e) => setSleepHours(e.target.value)}
+              placeholder="e.g. 7"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Water Intake</Label>
+            <Label>Water Intake (glasses)</Label>
             <Input
               type="number"
               value={waterIntake}
               onChange={(e) => setWaterIntake(e.target.value)}
+              placeholder="e.g. 8"
             />
           </div>
 
@@ -133,19 +141,24 @@ const HabitForm = () => {
                 <SelectValue placeholder="Select mood" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="great">Great</SelectItem>
-                <SelectItem value="good">Good</SelectItem>
-                <SelectItem value="neutral">Neutral</SelectItem>
-                <SelectItem value="bad">Bad</SelectItem>
-                <SelectItem value="terrible">Terrible</SelectItem>
+                <SelectItem value="great">Great 😄</SelectItem>
+                <SelectItem value="good">Good 🙂</SelectItem>
+                <SelectItem value="neutral">Neutral 😐</SelectItem>
+                <SelectItem value="bad">Bad 😞</SelectItem>
+                <SelectItem value="terrible">Terrible 😢</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
+          {/* ✅ Green button — project ke saath match karta hai */}
           <div className="sm:col-span-2">
-            <Button type="submit" className="w-full">
-              Submit Habits
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 bg-emerald-500 hover:bg-emerald-600"
+            >
+              {loading ? "Submitting..." : "Submit Habits"}
+            </button>
           </div>
 
         </form>
