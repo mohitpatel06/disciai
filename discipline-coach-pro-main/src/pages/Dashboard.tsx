@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import {
   Target, BookOpen, Dumbbell, Moon, Droplets,
-  TrendingUp, Brain, Flame, Smile, Apple, Clock
+  TrendingUp, Brain, Flame, Smile, Apple,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -84,12 +84,26 @@ const Dashboard = () => {
 
   const aiSummary = habit ? getAISummary(habit.aiFeedback) : null;
 
-  // ✅ Aaj ki habit hai ya nahi
+  // ✅ Aaj ki habit fill hui ya nahi
   const isFilledToday = habit ? (() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const lastHabitDate = new Date(habit.createdAt); lastHabitDate.setHours(0, 0, 0, 0);
     return lastHabitDate.getTime() === today.getTime();
   })() : false;
+
+  // ✅ Real streak logic
+  // Aaj fill ki → streak valid
+  // Kal fill ki → streak valid (grace period)
+  // 2+ din se nahi fill ki → streak 0 (expired)
+  const currentStreak = (() => {
+    if (!habit) return 0;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); yesterday.setHours(0, 0, 0, 0);
+    const lastHabitDate = new Date(habit.createdAt); lastHabitDate.setHours(0, 0, 0, 0);
+    if (lastHabitDate.getTime() === today.getTime()) return habit.streak || 1;
+    if (lastHabitDate.getTime() === yesterday.getTime()) return habit.streak || 1;
+    return 0; // 2+ din se fill nahi ki — streak expired
+  })();
 
   // ✅ Goals sirf aaj ki habit ke saath dikhao
   const goalsProgress = goals && habit && isFilledToday ? [
@@ -172,32 +186,47 @@ const Dashboard = () => {
         {/* Row 1 — Score + AI Summary */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* Discipline Score */}
+          {/* Discipline Score + Real Streak */}
           <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium text-muted-foreground">Discipline Score</p>
-              <div className="flex items-center gap-1 bg-orange-500/10 rounded-full px-2 py-1">
-                <Flame size={12} className="text-orange-500" />
-                <span className="text-xs font-bold text-orange-500">{habit.streak || 1} Day Streak</span>
-              </div>
+
+              {/* ✅ Real streak display */}
+              {currentStreak > 0 ? (
+                <div className="flex items-center gap-1 bg-orange-500/10 rounded-full px-2 py-1">
+                  <Flame size={12} className="text-orange-500" />
+                  <span className="text-xs font-bold text-orange-500">{currentStreak} Day Streak</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 bg-muted rounded-full px-2 py-1">
+                  <Flame size={12} className="text-muted-foreground" />
+                  <span className="text-xs font-bold text-muted-foreground">No Streak</span>
+                </div>
+              )}
             </div>
+
             <div className="flex items-end gap-1 mb-3">
               <span className="text-5xl font-bold text-emerald-500">{habit.disciplineScore}</span>
               <span className="text-lg text-muted-foreground mb-1">/100</span>
             </div>
+
             <div className="w-full bg-muted rounded-full h-2 mb-3">
               <div
                 className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${habit.disciplineScore}%` }}
               ></div>
             </div>
+
+            {/* ✅ Warning — aaj fill nahi ki */}
             {!isFilledToday && (
               <button
                 onClick={() => navigate("/add-habit")}
                 className="w-full flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition"
               >
                 <Flame size={12} />
-                Streak expires tonight — Log habits now
+                {currentStreak > 0
+                  ? "Streak expires tonight — Log habits now"
+                  : "Start a new streak — Log today's habits"}
               </button>
             )}
           </div>
@@ -237,7 +266,7 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Today's Goals — sirf aaj ki habit hai toh dikhao */}
+        {/* Today's Goals — sirf aaj fill ki toh dikhao */}
         {isFilledToday && goalsProgress.length > 0 && (
           <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
@@ -269,7 +298,7 @@ const Dashboard = () => {
                         <span className="text-xs font-bold text-foreground">
                           {g.current}/{g.target}{g.unit}
                         </span>
-                        <span className={`text-xs ${achieved ? "text-emerald-500" : "text-red-400"}`}>
+                        <span className={`text-xs font-bold ${achieved ? "text-emerald-500" : "text-red-400"}`}>
                           {achieved ? "✓" : "✗"}
                         </span>
                       </div>
@@ -277,10 +306,7 @@ const Dashboard = () => {
                     <div className="w-full bg-muted rounded-full h-1.5">
                       <div
                         className="h-1.5 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${percent}%`,
-                          backgroundColor: achieved ? "#10b981" : g.color,
-                        }}
+                        style={{ width: `${percent}%`, backgroundColor: achieved ? "#10b981" : g.color }}
                       ></div>
                     </div>
                   </div>
@@ -290,7 +316,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Aaj habit nahi fill ki — Goals section mein prompt dikhao */}
+        {/* Aaj fill nahi ki — prompt dikhao */}
         {!isFilledToday && goals && (
           <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
@@ -379,7 +405,7 @@ const Dashboard = () => {
         {/* Today's Log */}
         <div>
           <p className="text-sm font-semibold text-foreground mb-3">
-            {isFilledToday ? "📋 Today's Log" : "📋 Last Entry"}
+            {isFilledToday ? "Today's Log" : "Last Entry"}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[
