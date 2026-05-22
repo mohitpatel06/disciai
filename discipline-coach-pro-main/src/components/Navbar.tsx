@@ -9,7 +9,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
-  const isAuthenticated = false;
+  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
   const navLinks = isAuthenticated
     ? [
