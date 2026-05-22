@@ -63,6 +63,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "vite-plugin-pwa": "^0.18.0",
     "@eslint/js": "^9.32.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
