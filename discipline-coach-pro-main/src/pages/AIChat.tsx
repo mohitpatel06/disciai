@@ -3,16 +3,12 @@ import axios from "axios";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Send, Brain } from "lucide-react";
 
-export let sharedMessages = [
+const defaultMessages = [
     {
         role: "assistant",
         content: "Hey! I'm your DisciAI coach 🤖 How can I help you today? You can ask me anything about your habits, discipline, or productivity!",
     },
 ];
-
-export const setSharedMessages = (msgs) => {
-    sharedMessages = msgs;
-};
 
 const formatMessage = (text: string) => {
     if (!text) return "";
@@ -25,10 +21,32 @@ const formatMessage = (text: string) => {
 };
 
 const AIChat = () => {
-    const [messages, setMessages] = useState(sharedMessages);
+    const [messages, setMessages] = useState(defaultMessages);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef(null);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const res = await axios.get(
+                    "https://disciai-backend.onrender.com/api/ai/history",
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                if (Array.isArray(res.data) && res.data.length > 0) {
+                    setMessages(res.data.map((m) => ({ role: m.role, content: m.content })));
+                }
+            } catch (error) {
+                console.error("Failed to load chat history:", error);
+            }
+        };
+
+        fetchHistory();
+    }, []);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,7 +58,6 @@ const AIChat = () => {
         const userMessage = { role: "user", content: input };
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
-        setSharedMessages(updatedMessages);
         setInput("");
         setLoading(true);
 
@@ -62,7 +79,6 @@ const AIChat = () => {
                 { role: "assistant", content: res.data.reply },
             ];
             setMessages(newMessages);
-            setSharedMessages(newMessages);
         } catch (error) {
             const newMessages = [
                 ...updatedMessages,
@@ -72,9 +88,25 @@ const AIChat = () => {
                 },
             ];
             setMessages(newMessages);
-            setSharedMessages(newMessages);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const clearHistory = async () => {
+        if (!window.confirm("Clear your AI chat history?")) return;
+
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            await axios.delete("https://disciai-backend.onrender.com/api/ai/history", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setMessages(defaultMessages);
+        } catch (error) {
+            console.error("Could not clear chat history:", error);
+            alert("Unable to clear history right now. Please try again later.");
         }
     };
 
@@ -90,16 +122,24 @@ const AIChat = () => {
             <div className="flex flex-col h-[85vh] max-w-3xl mx-auto">
 
                 {/* Header */}
-                <div className="mb-4 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                        <Brain className="h-6 w-6 text-emerald-500" />
+                <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
+                            <Brain className="h-6 w-6 text-emerald-500" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-foreground">AI Coach</h1>
+                            <p className="text-muted-foreground text-sm">
+                                Chat with your personal AI discipline coach
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-foreground">AI Coach</h1>
-                        <p className="text-muted-foreground text-sm">
-                            Chat with your personal AI discipline coach
-                        </p>
-                    </div>
+                    <button
+                        onClick={clearHistory}
+                        className="text-sm text-emerald-600 hover:text-emerald-700 transition"
+                    >
+                        Clear history
+                    </button>
                 </div>
 
                 {/* Messages */}

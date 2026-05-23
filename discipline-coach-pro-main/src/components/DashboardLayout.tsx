@@ -4,11 +4,18 @@ import Sidebar from "./Sidebar";
 import { useTheme } from "../App";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import { sharedMessages, setSharedMessages } from "../pages/AIChat";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
+
+const defaultMessages = [
+  {
+    role: "assistant",
+    content:
+      "Hey! I'm your DisciAI coach 🤖 How can I help you today? You can ask me anything about your habits, discipline, or productivity!",
+  },
+];
 
 const formatMessage = (text: string) => {
   if (!text) return "";
@@ -50,7 +57,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
 
   const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState(sharedMessages);
+  const [messages, setMessages] = useState(defaultMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [notificationAsked, setNotificationAsked] = useState(false);
@@ -83,7 +90,28 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }, []);
 
   useEffect(() => {
-    if (chatOpen) setMessages([...sharedMessages]);
+    if (!chatOpen) return;
+
+    const fetchHistory = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await axios.get(
+          "https://disciai-backend.onrender.com/api/ai/history",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setMessages(res.data.map((m) => ({ role: m.role, content: m.content })));
+        } else {
+          setMessages(defaultMessages);
+        }
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    fetchHistory();
   }, [chatOpen]);
 
   useEffect(() => {
@@ -110,7 +138,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     const userMessage = { role: "user", content: input };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
-    setSharedMessages(updatedMessages);
     setInput("");
     setLoading(true);
     try {
@@ -122,13 +149,27 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       );
       const newMessages = [...updatedMessages, { role: "assistant", content: res.data.reply }];
       setMessages(newMessages);
-      setSharedMessages(newMessages);
     } catch (error) {
       const newMessages = [...updatedMessages, { role: "assistant", content: "Sorry, I'm unavailable right now. Please try again! 🙏" }];
       setMessages(newMessages);
-      setSharedMessages(newMessages);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearHistory = async () => {
+    if (!window.confirm("Clear your AI chat history?")) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await axios.delete("https://disciai-backend.onrender.com/api/ai/history", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessages(defaultMessages);
+    } catch (error) {
+      console.error("Could not clear chat history:", error);
     }
   };
 
@@ -268,9 +309,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <p className="text-white/70 text-xs">Always here to help</p>
                   </div>
                 </div>
-                <button onClick={() => setChatOpen(false)} className="text-white hover:bg-white/20 p-1 rounded-lg transition">
-                  <X size={18} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={clearHistory}
+                    className="text-xs uppercase tracking-[0.06em] text-white/80 hover:text-white hover:bg-white/10 px-2 py-1 rounded-lg transition"
+                  >
+                    Clear
+                  </button>
+                  <button onClick={() => setChatOpen(false)} className="text-white hover:bg-white/20 p-1 rounded-lg transition">
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">

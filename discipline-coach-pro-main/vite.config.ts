@@ -26,7 +26,7 @@ export default defineConfig({
         icons: [
           {
             src: "placeholder.svg",
-            sizes: "1200x1200",
+            sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",
           },

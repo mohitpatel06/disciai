@@ -1,11 +1,15 @@
 const axios = require("axios");
 const Habit = require("../models/Habit");
+const Chat = require("../models/Chat");
 
 // @desc    AI Chat
 // @route   POST /api/ai/chat
 const aiChat = async (req, res) => {
   try {
     const { messages } = req.body;
+    const lastUserMessage = Array.isArray(messages)
+      ? [...messages].reverse().find((m) => m.role === "user")
+      : null;
 
     const recentHabits = await Habit.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
@@ -50,11 +54,50 @@ Rules:
     );
 
     const reply = response.data.choices[0].message.content;
+
+    if (lastUserMessage) {
+      await Chat.create({
+        userId: req.user._id,
+        role: "user",
+        content: lastUserMessage.content,
+      });
+    }
+
+    await Chat.create({
+      userId: req.user._id,
+      role: "assistant",
+      content: reply,
+    });
+
     res.status(200).json({ reply });
 
   } catch (error) {
     console.log("AI Chat Error:", error.message);
     res.status(500).json({ message: "AI chat unavailable" });
+  }
+};
+
+// @desc    Get AI chat history for current user
+// @route   GET /api/ai/history
+const getChatHistory = async (req, res) => {
+  try {
+    const history = await Chat.find({ userId: req.user._id }).sort({ createdAt: 1 });
+    res.status(200).json(history);
+  } catch (error) {
+    console.log("Get Chat History Error:", error.message);
+    res.status(500).json({ message: "Unable to fetch chat history" });
+  }
+};
+
+// @desc    Delete AI chat history for current user
+// @route   DELETE /api/ai/history
+const clearChatHistory = async (req, res) => {
+  try {
+    await Chat.deleteMany({ userId: req.user._id });
+    res.status(200).json({ message: "Chat history cleared" });
+  } catch (error) {
+    console.log("Clear Chat History Error:", error.message);
+    res.status(500).json({ message: "Unable to clear chat history" });
   }
 };
 
@@ -155,4 +198,4 @@ Respond in EXACTLY this JSON format (no extra text, no markdown):
   }
 };
 
-module.exports = { getAIFeedback, getDisciplineTips, aiChat, detectBurnout };
+module.exports = { getAIFeedback, getDisciplineTips, aiChat, detectBurnout, getChatHistory, clearChatHistory };
