@@ -3,6 +3,17 @@ const mongoose = require("mongoose");
 const habitSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   userType: { type: String, enum: ["student", "professional", "general"], default: "general" },
+  focusAreas: [{ type: String }],
+  customHabits: [
+    {
+      name: { type: String },
+      category: { type: String },
+      target: { type: Number, default: 0 },
+      unit: { type: String, default: "" },
+      value: { type: Number, default: 0 },
+      completed: { type: Boolean, default: false },
+    },
+  ],
 
   // Common fields
   sleepHours: { type: Number, default: 0 },

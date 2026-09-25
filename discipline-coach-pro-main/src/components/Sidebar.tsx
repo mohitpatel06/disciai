@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Plus, BarChart3, LogOut, Brain,
-  Calendar as CalendarIcon, MessageCircle, Trophy, Target,
+  Calendar as CalendarIcon, MessageCircle, Trophy,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -51,7 +52,6 @@ const Sidebar = () => {
   const profileBorder = theme === "dark" ? "border-white/10 hover:bg-white/5" : "border-slate-200 hover:bg-slate-50";
   const profileName = theme === "dark" ? "text-white" : "text-slate-900";
   const profileEmail = theme === "dark" ? "text-slate-500" : "text-slate-400";
-  const bottomBorder = theme === "dark" ? "border-white/10" : "border-slate-200";
 
   return (
     <aside className={`w-64 h-screen sticky top-0 flex flex-col border-r overflow-hidden ${sidebarBg}`}>
@@ -66,8 +66,8 @@ const Sidebar = () => {
 
       {/* Menu */}
       <nav className="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
-        <p className={`text-xs font-semibold uppercase tracking-wider px-4 mb-3 ${menuLabel}`}>
-          Menu
+        <p className={`text-xs font-semibold uppercase tracking-wider px-4 mb-2 ${menuLabel}`}>
+          Navigation
         </p>
 
         <Link to="/dashboard" className={linkClass("/dashboard")}>
@@ -75,9 +75,6 @@ const Sidebar = () => {
         </Link>
         <Link to="/add-habit" className={linkClass("/add-habit")}>
           <Plus size={18} />Add Habit
-        </Link>
-        <Link to="/goals" className={linkClass("/goals")}>
-          <Target size={18} />Goals
         </Link>
         <Link to="/report" className={linkClass("/report")}>
           <BarChart3 size={18} />Report
@@ -91,34 +88,50 @@ const Sidebar = () => {
         <Link to="/ai-chat" className={linkClass("/ai-chat")}>
           <MessageCircle size={18} />AI Coach
         </Link>
-      </nav>
 
-      {/* Bottom Section */}
-      <div className={`p-4 border-t flex-shrink-0 space-y-2 ${bottomBorder}`}>
-        <button
-          onClick={handleLogout}
-          className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${logoutClass}`}
-        >
-          <LogOut size={18} />Logout
-        </button>
+        {/* Clean Divider */}
+        <div className="my-3 border-t border-border/50 mx-2" />
 
+        <p className={`text-xs font-semibold uppercase tracking-wider px-4 mb-2 ${menuLabel}`}>
+          Account
+        </p>
+
+        <Link to="/settings" className={linkClass("/settings")}>
+          <SettingsIcon size={18} />Settings
+        </Link>
+
+        {/* Profile clearly accessible with avatar and user details */}
         <Link
           to="/profile"
-          className={`flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-200 border ${profileBorder}`}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+            location.pathname === "/profile"
+              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+              : profileBorder
+          }`}
+          title="Open Profile"
         >
-          <div className="flex items-center justify-center h-9 w-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex-shrink-0">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex-shrink-0">
             {avatarLetter}
           </div>
-          <div className="overflow-hidden">
-            <p className={`text-sm font-semibold truncate capitalize ${profileName}`}>
-              {user.name || "User"}
-            </p>
-            <p className={`text-xs truncate ${profileEmail}`}>
-              {user.email || ""}
+          <div className="overflow-hidden flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold ${profileName}`}>Profile</span>
+              <span className="text-[10px] text-emerald-500 font-medium">Edit →</span>
+            </div>
+            <p className={`text-[11px] truncate ${profileEmail}`}>
+              {user.name ? `${user.name}` : (user.email || "Manage Account")}
             </p>
           </div>
         </Link>
-      </div>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all duration-200 text-xs font-medium mt-1 ${logoutClass}`}
+        >
+          <LogOut size={16} />Logout
+        </button>
+      </nav>
     </aside>
   );
 };

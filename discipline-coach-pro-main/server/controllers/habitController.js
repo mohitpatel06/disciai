@@ -1,41 +1,183 @@
 const Habit = require("../models/Habit");
 const axios = require("axios");
 
+const normalizeNumber = (value) => {
+  if (value === null || value === undefined) return 0;
+  const number = Number(value);
+  return Number.isNaN(number) ? 0 : number;
+};
+
+const scoreSleep = (sleepHours, goal) => {
+  if (sleepHours >= goal && sleepHours <= goal + 1) return 20;
+  if (sleepHours >= goal - 1 && sleepHours <= goal + 2) return 15;
+  if (sleepHours >= goal - 2 && sleepHours <= goal + 3) return 10;
+  if (sleepHours > goal + 3) return 5;
+  return 0;
+};
+
+const scoreWater = (waterIntake, goal) => {
+  if (waterIntake >= goal) return 15;
+  if (waterIntake >= Math.max(4, goal - 2)) return 10;
+  if (waterIntake >= 2) return 5;
+  return 0;
+};
+
+const scoreWorkout = (workout, goal) => {
+  if (workout >= goal && workout <= 75) return 15;
+  if (workout >= Math.max(10, goal - 10)) return 10;
+  if (workout > 0) return 5;
+  return 0;
+};
+
+const scoreMood = (mood) => {
+  const map = {
+    great: 10,
+    good: 7,
+    neutral: 4,
+    bad: 1,
+    terrible: 0,
+  };
+  return map[mood] ?? 4;
+};
+
+const scoreNutrition = (junkFood) => (junkFood ? 3 : 10);
+
+const scoreScreenTime = (screenTime) => {
+  if (screenTime === 0) return 0;
+  if (screenTime <= 2) return 10;
+  if (screenTime <= 4) return 7;
+  if (screenTime <= 6) return 3;
+  return 0;
+};
+
+const scoreStress = (stressLevel) => {
+  if (stressLevel === "low") return 10;
+  if (stressLevel === "medium") return 5;
+  return 0;
+};
+
+const scoreGoalCompletion = (values, goals) => {
+  const targets = [
+    values.sleepHours >= goals.sleepHours,
+    values.waterIntake >= goals.waterIntake,
+    values.workout >= goals.workout,
+    values.studyHours >= (goals.studyHours || 6),
+    values.assignmentsDone >= 1,
+    values.revisionDone,
+    values.screenTime > 0 && values.screenTime <= 4,
+    values.stressLevel === "low",
+    values.readingMinutes >= 20,
+    values.meditationMinutes >= 10,
+    values.outdoorTime >= 30,
+  ];
+  const completed = targets.filter(Boolean).length;
+  return Math.min(20, Math.round((completed / targets.length) * 20));
+};
+
+const scoreCustomHabits = (customHabits = []) => {
+  if (!Array.isArray(customHabits) || customHabits.length === 0) return 0;
+  const completed = customHabits.filter((habit) => habit.completed || habit.value >= habit.target).length;
+  return Math.min(10, Math.round((completed / customHabits.length) * 10));
+};
+
+const buildHabitSummary = (habitData) => {
+  const lines = [];
+  if (habitData.focusAreas && habitData.focusAreas.length) {
+    lines.push(`Focus Areas: ${habitData.focusAreas.join(", ")}`);
+  }
+
+  lines.push(
+    `Sleep: ${habitData.sleepHours} hrs`,
+    `Water: ${habitData.waterIntake} glasses`,
+    `Workout: ${habitData.workout} mins`,
+    `Mood: ${habitData.mood}`,
+    `Junk Food: ${habitData.junkFood ? "Yes" : "No"}`,
+  );
+
+  if (habitData.studyHours) lines.push(`Study: ${habitData.studyHours} hrs`);
+  if (habitData.assignmentsDone) lines.push(`Assignments Done: ${habitData.assignmentsDone}`);
+  if (habitData.revisionDone) lines.push(`Revision Done: Yes`);
+  if (habitData.workHours) lines.push(`Work Hours: ${habitData.workHours} hrs`);
+  if (habitData.meetingsAttended) lines.push(`Meetings: ${habitData.meetingsAttended}`);
+  if (habitData.screenTime) lines.push(`Screen Time: ${habitData.screenTime} hrs`);
+  if (habitData.stressLevel) lines.push(`Stress Level: ${habitData.stressLevel}`);
+  if (habitData.readingMinutes) lines.push(`Reading: ${habitData.readingMinutes} mins`);
+  if (habitData.meditationMinutes) lines.push(`Meditation: ${habitData.meditationMinutes} mins`);
+  if (habitData.outdoorTime) lines.push(`Outdoor Time: ${habitData.outdoorTime} mins`);
+
+  if (Array.isArray(habitData.customHabits) && habitData.customHabits.length) {
+    habitData.customHabits.forEach((custom) => {
+      lines.push(`Custom Habit: ${custom.name} — ${custom.value || 0}${custom.unit ? ` ${custom.unit}` : ""}${custom.completed ? " ✅" : ""}`);
+    });
+  }
+
+  return lines.join("\n");
+};
+
 const createHabit = async (req, res) => {
   try {
     const {
       userType,
-      sleepHours, waterIntake, workout, mood, junkFood,
-      studyHours, assignmentsDone, revisionDone,
-      workHours, meetingsAttended, screenTime, stressLevel,
-      readingMinutes, meditationMinutes, outdoorTime,
+      focusAreas = [],
+      customHabits = [],
+      sleepHours,
+      waterIntake,
+      workout,
+      mood,
+      junkFood,
+      studyHours,
+      assignmentsDone,
+      revisionDone,
+      workHours,
+      meetingsAttended,
+      screenTime,
+      stressLevel,
+      readingMinutes,
+      meditationMinutes,
+      outdoorTime,
     } = req.body;
 
-    // ✅ Score calculate — user type ke hisaab se
+    const goals = req.user.goals || {
+      studyHours: 6,
+      workout: 30,
+      sleepHours: 8,
+      waterIntake: 8,
+    };
+
+    const habitData = {
+      userType: userType || "general",
+      focusAreas,
+      customHabits: Array.isArray(customHabits) ? customHabits : [],
+      sleepHours: normalizeNumber(sleepHours),
+      waterIntake: normalizeNumber(waterIntake),
+      workout: normalizeNumber(workout),
+      mood: mood || "neutral",
+      junkFood: Boolean(junkFood),
+      studyHours: normalizeNumber(studyHours),
+      assignmentsDone: normalizeNumber(assignmentsDone),
+      revisionDone: Boolean(revisionDone),
+      workHours: normalizeNumber(workHours),
+      meetingsAttended: normalizeNumber(meetingsAttended),
+      screenTime: normalizeNumber(screenTime),
+      stressLevel: typeof stressLevel === "string" ? stressLevel : "",
+      readingMinutes: normalizeNumber(readingMinutes),
+      meditationMinutes: normalizeNumber(meditationMinutes),
+      outdoorTime: normalizeNumber(outdoorTime),
+    };
+
     let score = 0;
+    score += scoreSleep(habitData.sleepHours, goals.sleepHours);
+    score += scoreWater(habitData.waterIntake, goals.waterIntake);
+    score += scoreWorkout(habitData.workout, goals.workout);
+    score += scoreMood(habitData.mood);
+    score += scoreNutrition(habitData.junkFood);
+    score += scoreScreenTime(habitData.screenTime);
+    score += scoreStress(habitData.stressLevel);
+    score += scoreGoalCompletion(habitData, goals);
+    score += scoreCustomHabits(habitData.customHabits);
 
-    // Common habits (40 points)
-    if (Number(sleepHours) >= 7) score += 10;
-    if (Number(waterIntake) >= 8) score += 10;
-    if (Number(workout) >= 20) score += 10;
-    if (!junkFood) score += 10;
+    const disciplineScore = Math.max(0, Math.min(100, Math.round(score)));
 
-    // User type specific (60 points)
-    if (userType === "student") {
-      if (Number(studyHours) >= 4) score += 20;
-      if (Number(assignmentsDone) >= 1) score += 20;
-      if (revisionDone) score += 20;
-    } else if (userType === "professional") {
-      if (Number(workHours) >= 6) score += 20;
-      if (Number(screenTime) <= 4) score += 20;
-      if (stressLevel === "low") score += 20;
-    } else {
-      if (Number(readingMinutes) >= 20) score += 20;
-      if (Number(meditationMinutes) >= 10) score += 20;
-      if (Number(outdoorTime) >= 30) score += 20;
-    }
-
-    // ✅ Streak calculate
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
@@ -57,41 +199,7 @@ const createHabit = async (req, res) => {
     }
 
     const userName = req.user.name || "there";
-
-    // ✅ AI Prompt — user type ke hisaab se
-    let habitSummary = "";
-    if (userType === "student") {
-      habitSummary = `
-Study Hours: ${studyHours}
-Assignments Done: ${assignmentsDone}
-Revision Done: ${revisionDone ? "Yes" : "No"}
-Workout: ${workout} mins
-Sleep: ${sleepHours} hrs
-Water: ${waterIntake} glasses
-Junk Food: ${junkFood ? "Yes" : "No"}
-Mood: ${mood}`;
-    } else if (userType === "professional") {
-      habitSummary = `
-Work Hours: ${workHours}
-Meetings Attended: ${meetingsAttended}
-Screen Time: ${screenTime} hrs
-Stress Level: ${stressLevel}
-Workout: ${workout} mins
-Sleep: ${sleepHours} hrs
-Water: ${waterIntake} glasses
-Junk Food: ${junkFood ? "Yes" : "No"}
-Mood: ${mood}`;
-    } else {
-      habitSummary = `
-Reading: ${readingMinutes} mins
-Meditation: ${meditationMinutes} mins
-Outdoor Time: ${outdoorTime} mins
-Workout: ${workout} mins
-Sleep: ${sleepHours} hrs
-Water: ${waterIntake} glasses
-Junk Food: ${junkFood ? "Yes" : "No"}
-Mood: ${mood}`;
-    }
+    const habitSummary = buildHabitSummary(habitData);
 
     let aiFeedback = "";
     try {
@@ -101,10 +209,10 @@ Talk directly to the user like a personal coach — use their name "${userName}"
 Be warm, specific, and practical. Do NOT write like a report or theory.
 Use emojis to make it engaging.
 
-User Type: ${userType}
 Name: ${userName}
+Focus Areas: ${focusAreas.length ? focusAreas.join(", ") : "No specific focus areas"}
 ${habitSummary}
-Discipline Score: ${score}/100
+Discipline Score: ${disciplineScore}/100
 
 Output format (strictly follow this):
 
@@ -119,9 +227,9 @@ What needs improvement ⚠️
 [List only the habits that need work]
 
 Today's Suggestions 💡
-[Give 3-4 specific, actionable suggestions based on user type and today's data]
+[Give 3-4 specific, actionable suggestions based on today's data]
 
-Discipline Score: ${score}/100 — [One motivating line]
+Discipline Score: ${disciplineScore}/100 — [One motivating line]
 `;
 
       const response = await axios.post(
@@ -145,29 +253,15 @@ Discipline Score: ${score}/100 — [One motivating line]
 
     const habit = await Habit.create({
       userId: req.user._id,
-      userType: userType || "general",
-      sleepHours: Number(sleepHours) || 0,
-      waterIntake: Number(waterIntake) || 0,
-      workout: Number(workout) || 0,
-      mood,
-      junkFood,
-      studyHours: Number(studyHours) || 0,
-      assignmentsDone: Number(assignmentsDone) || 0,
-      revisionDone: revisionDone || false,
-      workHours: Number(workHours) || 0,
-      meetingsAttended: Number(meetingsAttended) || 0,
-      screenTime: Number(screenTime) || 0,
-      stressLevel: stressLevel || "low",
-      readingMinutes: Number(readingMinutes) || 0,
-      meditationMinutes: Number(meditationMinutes) || 0,
-      outdoorTime: Number(outdoorTime) || 0,
-      disciplineScore: score,
+      ...habitData,
+      disciplineScore,
       aiFeedback,
       streak: newStreak,
     });
 
     res.status(201).json(habit);
   } catch (error) {
+    console.error("Create Habit Error:", error && error.stack ? error.stack : error);
     res.status(500).json({ message: error.message });
   }
 };

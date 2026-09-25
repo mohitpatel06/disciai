@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Brain, Sun, Moon, X, Send } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { useTheme } from "../App";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import axios from "axios";
 
 interface DashboardLayoutProps {
@@ -218,7 +218,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               DisciAI
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-slate-100"}`}
@@ -229,6 +229,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <Sun className="h-5 w-5 text-yellow-400" />
               )}
             </button>
+            <Link
+              to="/profile"
+              className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs"
+              title="Profile"
+            >
+              P
+            </Link>
             <button
               onClick={() => setOpen(!open)}
               className={`text-2xl ${theme === "dark" ? "text-white" : "text-slate-900"}`}
@@ -239,7 +246,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
 
         {/* Desktop Top Bar */}
-        <div className={`hidden lg:flex items-center justify-end px-8 h-16 border-b flex-shrink-0 ${topBarBg}`}>
+        <div className={`hidden lg:flex items-center justify-end gap-3 px-8 h-16 border-b flex-shrink-0 ${topBarBg}`}>
           <button
             onClick={toggleTheme}
             className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-slate-100"}`}
@@ -250,6 +257,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <Sun className="h-5 w-5 text-yellow-400" />
             )}
           </button>
+          <Link
+            to="/profile"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-muted/60 transition border border-transparent hover:border-border text-xs font-semibold text-foreground"
+            title="Profile & Settings"
+          >
+            <div className="flex items-center justify-center h-7 w-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs">
+              P
+            </div>
+            <span>Profile</span>
+          </Link>
         </div>
 
         {/* ✅ Notification Banner */}

@@ -3,122 +3,205 @@ import axios from "axios";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Trophy, Lock, CheckCircle } from "lucide-react";
 
-const BADGES = [
+const computeHabitStats = (habits) => {
+    const stats = {
+        total: habits.length,
+        bestStreak: 0,
+        perfectDays: 0,
+        greatMood: 0,
+        noJunkMaxStreak: 0,
+        studyDays: 0,
+        readingDays: 0,
+        meditationDays: 0,
+        outdoorDays: 0,
+        balancedDays: 0,
+        customCreated: 0,
+        customCompleted: 0,
+        focusAreaCounts: {},
+    };
+
+    let currentNoJunk = 0;
+
+    habits.forEach((h) => {
+        const streak = h.streak || 0;
+        stats.bestStreak = Math.max(stats.bestStreak, streak);
+
+        if (h.disciplineScore === 100) stats.perfectDays += 1;
+        if (h.mood === "great") stats.greatMood += 1;
+
+        if (!h.junkFood) {
+            currentNoJunk += 1;
+            stats.noJunkMaxStreak = Math.max(stats.noJunkMaxStreak, currentNoJunk);
+        } else {
+            currentNoJunk = 0;
+        }
+
+        if (h.studyHours >= 4) stats.studyDays += 1;
+        if (h.readingMinutes >= 20) stats.readingDays += 1;
+        if (h.meditationMinutes >= 10) stats.meditationDays += 1;
+        if (h.outdoorTime >= 30) stats.outdoorDays += 1;
+
+        if (Array.isArray(h.focusAreas)) {
+            h.focusAreas.forEach((area) => {
+                if (!area) return;
+                stats.focusAreaCounts[area] = (stats.focusAreaCounts[area] || 0) + 1;
+            });
+        }
+
+        if (Array.isArray(h.customHabits)) {
+            stats.customCreated += h.customHabits.length;
+            stats.customCompleted += h.customHabits.filter((habit) => habit.completed || habit.value >= habit.target).length;
+        }
+
+        const balancedChecks = [
+            h.sleepHours >= 7,
+            h.waterIntake >= 2.5,
+            h.workout >= 20,
+            !h.junkFood,
+            h.mood !== "bad" && h.mood !== "terrible",
+        ].filter(Boolean).length;
+
+        if (balancedChecks >= 4) stats.balancedDays += 1;
+    });
+
+    return stats;
+};
+
+const getBadgeDefinitions = (stats) => [
     {
         id: "first_habit",
         icon: "🌱",
         title: "First Step",
-        desc: "Log your first habit",
+        desc: "Log your first habit entry.",
         category: "Getting Started",
         color: { border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "text-emerald-500" },
-        check: (habits) => habits.length >= 1,
+        check: () => stats.total >= 1,
     },
     {
         id: "week_streak",
         icon: "🔥",
         title: "Week Warrior",
-        desc: "Maintain a 7 day streak",
+        desc: "Keep a 7-day streak going.",
         category: "Streaks",
         color: { border: "border-orange-500/30", bg: "bg-orange-500/10", text: "text-orange-500" },
-        check: (habits) => habits.some((h) => h.streak >= 7),
+        check: () => stats.bestStreak >= 7,
     },
     {
         id: "month_streak",
         icon: "⚡",
         title: "Month Master",
-        desc: "Maintain a 30 day streak",
+        desc: "Build a 30-day streak.",
         category: "Streaks",
         color: { border: "border-yellow-500/30", bg: "bg-yellow-500/10", text: "text-yellow-500" },
-        check: (habits) => habits.some((h) => h.streak >= 30),
+        check: () => stats.bestStreak >= 30,
     },
     {
         id: "perfect_score",
         icon: "💯",
         title: "Perfect Score",
-        desc: "Get 100% discipline score",
+        desc: "Hit a 100% discipline score day.",
         category: "Excellence",
         color: { border: "border-green-500/30", bg: "bg-green-500/10", text: "text-green-500" },
-        check: (habits) => habits.some((h) => h.disciplineScore === 100),
+        check: () => stats.perfectDays >= 1,
     },
     {
-        id: "study_champion",
-        icon: "📚",
-        title: "Study Champion",
-        desc: "Study 8+ hours in a day",
-        category: "Study",
-        color: { border: "border-blue-500/30", bg: "bg-blue-500/10", text: "text-blue-500" },
-        check: (habits) => habits.some((h) => h.studyHours >= 8),
-    },
-    {
-        id: "workout_warrior",
-        icon: "💪",
-        title: "Workout Warrior",
-        desc: "Workout 60+ minutes in a day",
-        category: "Fitness",
-        color: { border: "border-red-500/30", bg: "bg-red-500/10", text: "text-red-500" },
-        check: (habits) => habits.some((h) => h.workout >= 60),
-    },
-    {
-        id: "hydration_hero",
-        icon: "💧",
-        title: "Hydration Hero",
-        desc: "Drink 8+ glasses of water",
-        category: "Health",
+        id: "focus_health",
+        icon: "💚",
+        title: "Health Focus",
+        desc: "Log health-focused habits 3 times.",
+        category: "Focus",
         color: { border: "border-cyan-500/30", bg: "bg-cyan-500/10", text: "text-cyan-500" },
-        check: (habits) => habits.some((h) => h.waterIntake >= 8),
+        check: () => stats.focusAreaCounts.health >= 3,
     },
     {
-        id: "sleep_master",
-        icon: "😴",
-        title: "Sleep Master",
-        desc: "Sleep 8+ hours",
-        category: "Health",
-        color: { border: "border-purple-500/30", bg: "bg-purple-500/10", text: "text-purple-500" },
-        check: (habits) => habits.some((h) => h.sleepHours >= 8),
+        id: "focus_productivity",
+        icon: "🚀",
+        title: "Productivity Focus",
+        desc: "Log productivity-focused habits 3 times.",
+        category: "Focus",
+        color: { border: "border-blue-500/30", bg: "bg-blue-500/10", text: "text-blue-500" },
+        check: () => stats.focusAreaCounts.productivity >= 3,
+    },
+    {
+        id: "focus_learning",
+        icon: "📘",
+        title: "Learning Focus",
+        desc: "Log learning-focused habits 3 times.",
+        category: "Focus",
+        color: { border: "border-violet-500/30", bg: "bg-violet-500/10", text: "text-violet-500" },
+        check: () => stats.focusAreaCounts.learning >= 3,
+    },
+    {
+        id: "focus_mindfulness",
+        icon: "🧘‍♂️",
+        title: "Mindfulness Focus",
+        desc: "Log mindfulness-focused habits 3 times.",
+        category: "Focus",
+        color: { border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "text-emerald-500" },
+        check: () => stats.focusAreaCounts.mindfulness >= 3,
+    },
+    {
+        id: "custom_starter",
+        icon: "🛠️",
+        title: "Custom Habit Creator",
+        desc: "Create at least one custom habit.",
+        category: "Custom",
+        color: { border: "border-orange-500/30", bg: "bg-orange-500/10", text: "text-orange-500" },
+        check: () => stats.customCreated >= 1,
+    },
+    {
+        id: "custom_finisher",
+        icon: "✅",
+        title: "Custom Habit Finisher",
+        desc: "Complete a custom habit goal.",
+        category: "Custom",
+        color: { border: "border-violet-500/30", bg: "bg-violet-500/10", text: "text-violet-500" },
+        check: () => stats.customCompleted >= 1,
+    },
+    {
+        id: "balanced_day",
+        icon: "⚖️",
+        title: "Balanced Day",
+        desc: "Have 3 days with strong core habits.",
+        category: "Wellness",
+        color: { border: "border-indigo-500/30", bg: "bg-indigo-500/10", text: "text-indigo-500" },
+        check: () => stats.balancedDays >= 3,
+    },
+    {
+        id: "good_vibes",
+        icon: "😄",
+        title: "Good Vibes",
+        desc: "Log a great mood 5 times.",
+        category: "Mindset",
+        color: { border: "border-pink-500/30", bg: "bg-pink-500/10", text: "text-pink-500" },
+        check: () => stats.greatMood >= 5,
     },
     {
         id: "no_junk",
         icon: "🥗",
         title: "Clean Eater",
-        desc: "Avoid junk food 7 days in a row",
+        desc: "Avoid junk food for 7 consecutive days.",
         category: "Health",
         color: { border: "border-lime-500/30", bg: "bg-lime-500/10", text: "text-lime-500" },
-        check: (habits) => {
-            let count = 0;
-            for (const h of habits) {
-                if (!h.junkFood) count++;
-                else count = 0;
-                if (count >= 7) return true;
-            }
-            return false;
-        },
+        check: () => stats.noJunkMaxStreak >= 7,
     },
     {
         id: "consistency_50",
         icon: "🎯",
         title: "Half Century",
-        desc: "Log habits 50 times",
+        desc: "Log habits 50 times.",
         category: "Consistency",
         color: { border: "border-indigo-500/30", bg: "bg-indigo-500/10", text: "text-indigo-500" },
-        check: (habits) => habits.length >= 50,
-    },
-    {
-        id: "great_mood",
-        icon: "😄",
-        title: "Good Vibes",
-        desc: "Log 'great' mood 5 times",
-        category: "Mindset",
-        color: { border: "border-pink-500/30", bg: "bg-pink-500/10", text: "text-pink-500" },
-        check: (habits) => habits.filter((h) => h.mood === "great").length >= 5,
+        check: () => stats.total >= 50,
     },
     {
         id: "legend",
         icon: "🏆",
         title: "DisciAI Legend",
-        desc: "Earn all other badges",
+        desc: "Earn all other badges.",
         category: "Legendary",
         color: { border: "border-yellow-500/30", bg: "bg-yellow-500/10", text: "text-yellow-500" },
-        check: (habits, earned) => earned >= 11,
+        check: (_, earnedCount, totalCount) => earnedCount >= totalCount - 1,
     },
 ];
 
@@ -186,13 +269,21 @@ const Achievements = () => {
         fetchHabits();
     }, []);
 
-    const earnedCount = BADGES.slice(0, 11).filter((b) => b.check(habits, 0)).length;
-    const badgeResults = BADGES.map((b) => ({
-        ...b,
-        earned: b.id === "legend" ? b.check(habits, earnedCount) : b.check(habits, 0),
+    const stats = computeHabitStats(habits);
+    const badgeDefinitions = getBadgeDefinitions(stats);
+    const earnedBase = badgeDefinitions
+        .filter((badge) => badge.id !== "legend")
+        .filter((badge) => badge.check(stats, 0, badgeDefinitions.length)).length;
+
+    const badgeResults = badgeDefinitions.map((badge) => ({
+        ...badge,
+        earned: badge.id === "legend"
+            ? badge.check(stats, earnedBase, badgeDefinitions.length)
+            : badge.check(stats, earnedBase, badgeDefinitions.length),
     }));
+
     const totalEarned = badgeResults.filter((b) => b.earned).length;
-    const progressPercent = Math.round((totalEarned / BADGES.length) * 100);
+    const progressPercent = Math.round((totalEarned / badgeDefinitions.length) * 100);
 
     if (loading) {
         return (
@@ -230,7 +321,7 @@ const Achievements = () => {
                             <p className="font-semibold text-foreground text-sm">Overall Progress</p>
                         </div>
                         <span className="text-sm font-bold text-foreground">
-                            {totalEarned} <span className="text-muted-foreground font-normal">/ {BADGES.length}</span>
+                            {totalEarned} <span className="text-muted-foreground font-normal">/ {badgeDefinitions.length}</span>
                         </span>
                     </div>
 
@@ -243,9 +334,9 @@ const Achievements = () => {
 
                     <div className="flex items-center justify-between">
                         <p className="text-xs text-muted-foreground">
-                            {totalEarned === BADGES.length
+                            {totalEarned === badgeDefinitions.length
                                 ? "🎉 All badges earned! You're a DisciAI Legend!"
-                                : `${BADGES.length - totalEarned} badges remaining`}
+                                : `${badgeDefinitions.length - totalEarned} badges remaining`}
                         </p>
                         <p className="text-xs font-bold text-emerald-500">{progressPercent}%</p>
                     </div>
@@ -269,12 +360,12 @@ const Achievements = () => {
                 )}
 
                 {/* Locked Badges */}
-                {BADGES.length - totalEarned > 0 && (
+                {badgeDefinitions.length - totalEarned > 0 && (
                     <div>
                         <div className="flex items-center gap-2 mb-4">
                             <Lock size={16} className="text-muted-foreground" />
                             <h2 className="text-base font-bold text-foreground">
-                                Locked <span className="text-muted-foreground font-normal">({BADGES.length - totalEarned})</span>
+                                Locked <span className="text-muted-foreground font-normal">({badgeDefinitions.length - totalEarned})</span>
                             </h2>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

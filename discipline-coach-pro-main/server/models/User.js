@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     sleepHours: { type: Number, default: 8 },
     waterIntake: { type: Number, default: 8 },
   },
+  focusAreas: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
 });
 

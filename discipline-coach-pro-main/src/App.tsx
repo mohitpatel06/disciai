@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import AddHabit from "./pages/AddHabit";
 import Report from "./pages/Report";
@@ -37,7 +38,8 @@ function Layout() {
   const showNavbar =
     location.pathname === "/" ||
     location.pathname === "/login" ||
-    location.pathname === "/register";
+    location.pathname === "/register" ||
+    location.pathname === "/onboarding";
 
   return (
     <>
@@ -46,10 +48,12 @@ function Layout() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add-habit" element={<ProtectedRoute><AddHabit /></ProtectedRoute>} />
         <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/ai" element={<ProtectedRoute><AI /></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />

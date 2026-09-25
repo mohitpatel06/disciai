@@ -159,7 +159,7 @@ const Report = () => {
           <p className="text-foreground"><strong>Study Hours:</strong> {habit.studyHours}</p>
           <p className="text-foreground"><strong>Workout:</strong> {habit.workout}</p>
           <p className="text-foreground"><strong>Sleep:</strong> {habit.sleepHours}</p>
-          <p className="text-foreground"><strong>Water Intake:</strong> {habit.waterIntake}</p>
+          <p className="text-foreground"><strong>Water Intake:</strong> {habit.waterIntake}L</p>
           <div className="col-span-1 md:col-span-2">
             <p className="font-semibold text-foreground">
               Discipline Score: {habit.disciplineScore}%
@@ -244,7 +244,7 @@ const Report = () => {
                       <p className="text-sm text-muted-foreground">Avg Sleep Hours</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-cyan-500">{avgWater}</p>
+                      <p className="text-2xl font-bold text-cyan-500">{avgWater}L</p>
                       <p className="text-sm text-muted-foreground">Avg Water Intake</p>
                     </div>
                     <div className="text-center">

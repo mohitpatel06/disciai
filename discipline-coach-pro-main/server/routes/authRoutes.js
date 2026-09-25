@@ -9,5 +9,6 @@ router.get("/me", protect, authController.getMe);
 router.put("/profile", protect, authController.updateProfile);
 router.get("/goals", protect, authController.getGoals);
 router.put("/goals", protect, authController.updateGoals);
+router.post("/onboarding", protect, authController.handleOnboarding);
 
 module.exports = router;

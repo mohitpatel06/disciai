@@ -13,7 +13,8 @@ const AI = () => {
             return;
         }
 
-        const res = await fetch("http://localhost:5000/api/ai", {
+        const apiBase = import.meta.env.VITE_API_BASE_URL || "https://disciai-backend.onrender.com";
+        const res = await fetch(`${apiBase}/api/ai/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

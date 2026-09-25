@@ -30,8 +30,9 @@ const Register = () => {
         alert(data.message || "Registration failed");
         return;
       }
-      alert("Registration successful");
-      navigate("/login");
+      // Save token and redirect to onboarding
+      localStorage.setItem("token", data.token);
+      navigate("/onboarding");
     } catch (error) {
       console.log("Register Error:", error);
       alert("Server error. Please try again.");

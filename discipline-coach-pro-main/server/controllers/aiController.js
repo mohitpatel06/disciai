@@ -16,14 +16,15 @@ const aiChat = async (req, res) => {
       .limit(7);
 
     const habitSummary = recentHabits.length > 0
-      ? recentHabits.map((h) =>
-        `Date: ${new Date(h.createdAt).toLocaleDateString()}, Study: ${h.studyHours}h, Workout: ${h.workout}min, Sleep: ${h.sleepHours}h, Water: ${h.waterIntake} glasses, Score: ${h.disciplineScore}/100`
-      ).join("\n")
+      ? recentHabits.map((h) => {
+        const focusSections = h.focusAreas && h.focusAreas.length ? ` Focus Areas: ${h.focusAreas.join(", ")}.` : "";
+        return `Date: ${new Date(h.createdAt).toLocaleDateString()}, Study: ${h.studyHours}h, Workout: ${h.workout}min, Sleep: ${h.sleepHours}h, Water: ${h.waterIntake} glasses, Mood: ${h.mood}, Score: ${h.disciplineScore}/100.${focusSections}`;
+      }).join("\n")
       : "No recent habits found.";
 
     const systemPrompt = `You are DisciAI — a friendly, personal AI discipline coach for ${req.user.name}.
 
-Your job is to help ${req.user.name} improve their daily habits, discipline, and productivity.
+Your job is to help ${req.user.name} improve their daily habits, discipline, and productivity by considering their current focus areas and lifestyle patterns.
 
 Here are ${req.user.name}'s recent habit entries for context:
 ${habitSummary}

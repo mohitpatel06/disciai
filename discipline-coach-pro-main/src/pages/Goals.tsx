@@ -8,7 +8,7 @@ const Goals = () => {
         studyHours: 6,
         workout: 30,
         sleepHours: 8,
-        waterIntake: 8,
+        waterIntake: 3,
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -95,9 +95,10 @@ const Goals = () => {
             label: "Water Intake",
             sublabel: "Daily hydration target",
             Icon: Droplets,
-            unit: "gl",
-            min: 4,
-            max: 20,
+            unit: "L",
+            min: 1,
+            max: 6,
+            step: 0.5,
             trackColor: "#06b6d4",
             iconBg: "bg-cyan-500/10",
             iconColor: "text-cyan-500",
@@ -170,6 +171,7 @@ const Goals = () => {
                                         type="range"
                                         min={item.min}
                                         max={item.max}
+                                        step={item.step || 1}
                                         value={goals[item.key]}
                                         onChange={(e) =>
                                             setGoals({ ...goals, [item.key]: Number(e.target.value) })
