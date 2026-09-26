@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Check, ArrowRight } from "lucide-react";
@@ -36,7 +37,7 @@ const Onboarding = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "/api/auth/onboarding",
+        API_BASE + "/api/auth/onboarding",
         {
           method: "POST",
           headers: {

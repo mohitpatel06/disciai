@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Plus, BarChart3, LogOut, Brain,
@@ -19,7 +20,7 @@ const Sidebar = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "/api/auth/me",
+          API_BASE + "/api/auth/me",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setUser({ name: res.data.name, email: res.data.email });

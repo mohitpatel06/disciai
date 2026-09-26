@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -19,7 +20,7 @@ const Profile = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "/api/auth/me",
+          API_BASE + "/api/auth/me",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -42,7 +43,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "/api/auth/profile",
+        API_BASE + "/api/auth/profile",
         { name, email },
         {
           headers: {

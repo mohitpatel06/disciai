@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -33,7 +34,7 @@ const AIChat = () => {
 
             try {
                 const res = await axios.get(
-                    "/api/ai/history",
+                    API_BASE + "/api/ai/history",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
@@ -64,7 +65,7 @@ const AIChat = () => {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.post(
-                "/api/ai/chat",
+                API_BASE + "/api/ai/chat",
                 {
                     messages: updatedMessages.map((m) => ({
                         role: m.role,
@@ -100,7 +101,7 @@ const AIChat = () => {
         if (!token) return;
 
         try {
-            await axios.delete("/api/ai/history", {
+            await axios.delete(API_BASE + "/api/ai/history", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessages(defaultMessages);

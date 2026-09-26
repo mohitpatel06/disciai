@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -545,11 +546,8 @@ const HabitForm = ({ editId: propEditId }: HabitFormProps) => {
         body.meditationMinutes = Number(meditationMinutes);
       }
 
-      const envApiBase = import.meta.env.VITE_API_BASE_URL || "";
-      const apiBase = envApiBase
-        ? envApiBase.replace(/\/$/, "")
-        : "";
-      const url = `${apiBase}/api/habits`;
+      
+      const url = `${API_BASE}/api/habits`;
 
       const res = await fetch(url, {
         method: "POST",

@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
@@ -40,10 +41,7 @@ const getUserId = (): string => {
   return "default";
 };
 
-const getApiBase = (): string => {
-  const envApiBase = import.meta.env.VITE_API_BASE_URL || "";
-  return envApiBase ? envApiBase.replace(/\/$/, "") : "";
-};
+
 
 const getAuthHeaders = () => {
   const rawToken = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -122,7 +120,7 @@ const Dashboard = () => {
 
   // ── Fetch user name + today's habits ──
   useEffect(() => {
-    const apiBase = getApiBase();
+    const apiBase = API_BASE;
     const headers = getAuthHeaders();
 
     const fetchAll = async () => {
@@ -303,7 +301,7 @@ const Dashboard = () => {
     setHabit(optimistic);
 
     try {
-      const apiBase = getApiBase();
+      const apiBase = API_BASE;
       const headers = getAuthHeaders();
       const body = {
         userType: optimistic.userType || "general",

@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -256,7 +257,7 @@ const Achievements = () => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    "/api/habits",
+                    API_BASE + "/api/habits",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setHabits(res.data);

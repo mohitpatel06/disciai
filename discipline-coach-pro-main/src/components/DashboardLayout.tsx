@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useRef, useEffect } from "react";
 import { Brain, Sun, Moon, X, Send } from "lucide-react";
 import Sidebar from "./Sidebar";
@@ -98,7 +99,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       try {
         const res = await axios.get(
-          "/api/ai/history",
+          API_BASE + "/api/ai/history",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (Array.isArray(res.data) && res.data.length > 0) {
@@ -155,11 +156,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     try {
       const token = localStorage.getItem("token");
-      const envApiBase = import.meta.env.VITE_API_BASE_URL || "";
-      const apiBase = envApiBase ? envApiBase.replace(/\/$/, "") : "";
+      
 
       const res = await axios.post(
-        `${apiBase}/api/ai/chat`,
+        `${API_BASE}/api/ai/chat`,
         { messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })) },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -196,7 +196,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     if (!token) return;
 
     try {
-      await axios.delete("/api/ai/history", {
+      await axios.delete(API_BASE + "/api/ai/history", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessages(defaultMessages);

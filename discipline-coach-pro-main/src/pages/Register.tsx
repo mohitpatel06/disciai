@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Brain } from "lucide-react";
@@ -18,7 +19,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        "/api/auth/register",
+        API_BASE + "/api/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

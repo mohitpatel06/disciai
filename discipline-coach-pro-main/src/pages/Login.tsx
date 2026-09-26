@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Brain } from "lucide-react";
@@ -16,7 +17,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(API_BASE + "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

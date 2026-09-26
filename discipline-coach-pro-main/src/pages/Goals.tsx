@@ -1,3 +1,4 @@
+import API_BASE from "@/lib/apiBase";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -19,7 +20,7 @@ const Goals = () => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    "/api/auth/goals",
+                    API_BASE + "/api/auth/goals",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setGoals(res.data);
@@ -37,7 +38,7 @@ const Goals = () => {
         try {
             const token = localStorage.getItem("token");
             await axios.put(
-                "/api/auth/goals",
+                API_BASE + "/api/auth/goals",
                 goals,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
