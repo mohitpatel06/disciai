@@ -548,7 +548,7 @@ const HabitForm = ({ editId: propEditId }: HabitFormProps) => {
       const envApiBase = import.meta.env.VITE_API_BASE_URL || "";
       const apiBase = envApiBase
         ? envApiBase.replace(/\/$/, "")
-        : "https://disciai-backend.onrender.com";
+        : "";
       const url = `${apiBase}/api/habits`;
 
       const res = await fetch(url, {

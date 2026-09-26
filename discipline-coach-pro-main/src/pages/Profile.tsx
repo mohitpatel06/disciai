@@ -19,7 +19,7 @@ const Profile = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://disciai-backend.onrender.com/api/auth/me",
+          "/api/auth/me",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "https://disciai-backend.onrender.com/api/auth/profile",
+        "/api/auth/profile",
         { name, email },
         {
           headers: {

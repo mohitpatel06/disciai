@@ -33,7 +33,7 @@ const AIChat = () => {
 
             try {
                 const res = await axios.get(
-                    "https://disciai-backend.onrender.com/api/ai/history",
+                    "/api/ai/history",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
@@ -64,7 +64,7 @@ const AIChat = () => {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.post(
-                "https://disciai-backend.onrender.com/api/ai/chat",
+                "/api/ai/chat",
                 {
                     messages: updatedMessages.map((m) => ({
                         role: m.role,
@@ -100,7 +100,7 @@ const AIChat = () => {
         if (!token) return;
 
         try {
-            await axios.delete("https://disciai-backend.onrender.com/api/ai/history", {
+            await axios.delete("/api/ai/history", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessages(defaultMessages);

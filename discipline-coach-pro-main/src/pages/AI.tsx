@@ -13,7 +13,7 @@ const AI = () => {
             return;
         }
 
-        const apiBase = import.meta.env.VITE_API_BASE_URL || "https://disciai-backend.onrender.com";
+        const apiBase = import.meta.env.VITE_API_BASE_URL || "";
         const res = await fetch(`${apiBase}/api/ai/chat`, {
             method: "POST",
             headers: {

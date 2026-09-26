@@ -98,7 +98,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       try {
         const res = await axios.get(
-          "https://disciai-backend.onrender.com/api/ai/history",
+          "/api/ai/history",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (Array.isArray(res.data) && res.data.length > 0) {
@@ -140,18 +140,50 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     setMessages(updatedMessages);
     setInput("");
     setLoading(true);
+
+    // Show a "waking up" hint after 8s if still waiting (Render free tier cold start)
+    const wakeupTimer = setTimeout(() => {
+      setMessages((prev) => {
+        // Only add wakeup message if still loading (no reply yet)
+        const last = prev[prev.length - 1];
+        if (last?.role === "user") {
+          return [...prev, { role: "assistant", content: "⏳ The AI server is waking up (Render free tier). This may take 30–60 seconds on first use. Please wait..." }];
+        }
+        return prev;
+      });
+    }, 8000);
+
     try {
       const token = localStorage.getItem("token");
+      const envApiBase = import.meta.env.VITE_API_BASE_URL || "";
+      const apiBase = envApiBase ? envApiBase.replace(/\/$/, "") : "";
+
       const res = await axios.post(
-        "https://disciai-backend.onrender.com/api/ai/chat",
+        `${apiBase}/api/ai/chat`,
         { messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })) },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 90000, // 90 second timeout for AI (cold start)
+        }
       );
-      const newMessages = [...updatedMessages, { role: "assistant", content: res.data.reply }];
-      setMessages(newMessages);
-    } catch (error) {
-      const newMessages = [...updatedMessages, { role: "assistant", content: "Sorry, I'm unavailable right now. Please try again! 🙏" }];
-      setMessages(newMessages);
+
+      clearTimeout(wakeupTimer);
+
+      // Remove the wakeup message if it was added, then add the real reply
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => !m.content.startsWith("⏳ The AI server is waking up"));
+        return [...filtered, { role: "assistant", content: res.data.reply }];
+      });
+    } catch (error: any) {
+      clearTimeout(wakeupTimer);
+      const isTimeout = error?.code === "ECONNABORTED" || error?.message?.includes("timeout");
+      const errMsg = isTimeout
+        ? "⚠️ The AI took too long to respond (server cold start). Please try sending your message again — it should respond faster now."
+        : "Sorry, the AI coach is unavailable right now. Please try again in a moment! 🙏";
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => !m.content.startsWith("⏳ The AI server is waking up"));
+        return [...filtered, { role: "assistant", content: errMsg }];
+      });
     } finally {
       setLoading(false);
     }
@@ -164,7 +196,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     if (!token) return;
 
     try {
-      await axios.delete("https://disciai-backend.onrender.com/api/ai/history", {
+      await axios.delete("/api/ai/history", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessages(defaultMessages);
@@ -300,7 +332,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         )}
 
         <main className={`flex-1 p-4 lg:p-8 ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}>
-          {children}
+          <div className="max-w-5xl mx-auto">
+            {children}
+          </div>
         </main>
 
       </div>

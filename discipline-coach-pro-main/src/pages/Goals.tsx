@@ -19,7 +19,7 @@ const Goals = () => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    "https://disciai-backend.onrender.com/api/auth/goals",
+                    "/api/auth/goals",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setGoals(res.data);
@@ -37,7 +37,7 @@ const Goals = () => {
         try {
             const token = localStorage.getItem("token");
             await axios.put(
-                "https://disciai-backend.onrender.com/api/auth/goals",
+                "/api/auth/goals",
                 goals,
                 { headers: { Authorization: `Bearer ${token}` } }
             );

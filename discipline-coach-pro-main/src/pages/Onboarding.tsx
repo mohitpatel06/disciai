@@ -36,7 +36,7 @@ const Onboarding = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://disciai-backend.onrender.com/api/auth/onboarding",
+        "/api/auth/onboarding",
         {
           method: "POST",
           headers: {

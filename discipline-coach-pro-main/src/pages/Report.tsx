@@ -48,7 +48,7 @@ const Report = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://disciai-backend.onrender.com/api/habits",
+          "/api/habits",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setHabits(res.data);

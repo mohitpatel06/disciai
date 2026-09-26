@@ -18,7 +18,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        "https://disciai-backend.onrender.com/api/auth/register",
+        "/api/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

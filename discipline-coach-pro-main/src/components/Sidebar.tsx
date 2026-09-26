@@ -19,7 +19,7 @@ const Sidebar = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://disciai-backend.onrender.com/api/auth/me",
+          "/api/auth/me",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setUser({ name: res.data.name, email: res.data.email });
