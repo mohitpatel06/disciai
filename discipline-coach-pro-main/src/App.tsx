@@ -22,6 +22,9 @@ import Calendar from "./pages/Calendar";
 import AIChat from "./pages/AIChat";
 import Achievements from "./pages/Achievements";
 import Goals from "./pages/Goals";
+import VerifyEmail from "./pages/VerifyEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +62,9 @@ function Layout() {
         <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
         <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
         <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
     waterIntake: { type: Number, default: 8 },
   },
   focusAreas: [{ type: String }],
+  // Email verification and password reset
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  resetPasswordToken: { type: String },
+  resetPasswordExpire: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

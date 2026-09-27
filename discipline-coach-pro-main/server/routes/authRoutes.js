@@ -11,4 +11,9 @@ router.get("/goals", protect, authController.getGoals);
 router.put("/goals", protect, authController.updateGoals);
 router.post("/onboarding", protect, authController.handleOnboarding);
 
+router.get("/verify-email/:token", authController.verifyEmail);
+router.post("/resend-verification", authController.resendVerificationEmail);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password/:token", authController.resetPassword);
+
 module.exports = router;
