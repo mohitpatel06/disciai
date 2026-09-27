@@ -31,9 +31,9 @@ const Register = () => {
         alert(data.message || "Registration failed");
         return;
       }
-      // Save token and redirect to onboarding
-      localStorage.setItem("token", data.token);
-      navigate("/onboarding");
+      // Do not auto-login. Redirect to login page and ask to verify email.
+      alert("Registration successful! Please verify your email before logging in.");
+      navigate("/login", { state: { needsVerification: true, email: data.email } });
     } catch (error) {
       console.log("Register Error:", error);
       alert("Server error. Please try again.");

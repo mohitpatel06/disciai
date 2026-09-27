@@ -51,7 +51,7 @@ const registerUser = async (req, res) => {
     
     try {
       await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: 'DisciAI <no-reply@disciai.mohitpatel.me>',
         to: email,
         subject: 'Email Verification - DisciAI',
         html: `<h2>Welcome to DisciAI!</h2>
@@ -67,7 +67,7 @@ const registerUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      message: "Please verify your email before logging in."
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -291,7 +291,7 @@ const resendVerificationEmail = async (req, res) => {
     const verifyUrl = `${frontendUrl}/verify-email/${verificationToken}`;
     
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'DisciAI <no-reply@disciai.mohitpatel.me>',
       to: user.email,
       subject: 'Email Verification - DisciAI',
       html: `<h2>Welcome to DisciAI!</h2>
@@ -328,7 +328,7 @@ const forgotPassword = async (req, res) => {
     console.log("Reset URL (Dev Test):", resetUrl);
     
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'DisciAI <no-reply@disciai.mohitpatel.me>',
       to: user.email,
       subject: 'Password Reset - DisciAI',
       html: `<h2>Password Reset Request</h2>
